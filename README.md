@@ -4,6 +4,20 @@ App3 Tester is a public, static research app for following a sanitized App3
 signal and testing it with a personal portfolio. It is designed for GitHub
 Pages and works without a backend, login, broker connection, or trading API.
 
+## Valbara ETF:er i App3
+
+App3-signalen anger marknadsläge. I appen översätts signalen tydligt till den
+ETF som användaren själv kan välja att äga:
+
+| App3-signal | Exponering | ETF/instrument | Ticker |
+| --- | --- | --- | --- |
+| `NASDAQ` | Nasdaq 100 | **Invesco EQQQ Nasdaq-100 UCITS ETF Dist** | `EQQQ` |
+| `OMX` | Sverige / OMX | **XACT OMXS30 ESG (UCITS ETF)** | `XACT OMXS30` |
+
+Appen visar aktuell ETF direkt under dagens signal och använder samma fasta
+instrumentval när en lokal testtransaktion registreras. App3 genomför aldrig
+köp eller försäljningar automatiskt.
+
 ## Architecture
 
 The four data domains are deliberately separate:
