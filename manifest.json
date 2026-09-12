@@ -1,0 +1,19 @@
+{
+  "name": "App3 Tester",
+  "short_name": "App3",
+  "description": "Publik App3-signal med en portfölj som endast lagras på användarens enhet.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f6f5",
+  "theme_color": "#0b1715",
+  "lang": "sv-SE",
+  "icons": [
+    {
+      "src": "./assets/icons/app3.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

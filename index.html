@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1715">
+  <meta name="description" content="Följ den publika App3-signalen och testa den med en lokal portfölj.">
+  <title>App3 Tester</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./assets/icons/app3.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./src/styles.css?v=1.0.0">
+</head>
+<body>
+  <a class="skip-link" href="#main">Hoppa till innehåll</a>
+  <header class="topbar">
+    <div class="brand-mark" aria-hidden="true">A3</div>
+    <div>
+      <strong>APP3 TESTER</strong>
+      <span>Research / testversion</span>
+    </div>
+    <button class="icon-button" id="themeButton" type="button" aria-label="Byt färgtema" title="Byt färgtema">◐</button>
+  </header>
+
+  <main id="main">
+    <section class="signal-shell" id="signalShell" aria-live="polite">
+      <div class="signal-loading" id="signalLoading">Verifierar App3-signalen…</div>
+      <div class="signal-error" id="signalError" hidden>
+        <span class="status-icon" aria-hidden="true">!</span>
+        <div>
+          <p class="eyebrow">SIGNAL EJ VERIFIERAD</p>
+          <h1>App3-status kan inte verifieras just nu.</h1>
+          <p id="signalErrorReason">Signaldata saknas eller är ogiltig.</p>
+        </div>
+      </div>
+      <div class="signal-content" id="signalContent" hidden>
+        <div class="signal-topline">
+          <p class="eyebrow" id="strategyLabel">Aktuell strategi</p>
+          <span class="quality-badge" id="qualityBadge">PASS</span>
+        </div>
+        <div class="signal-heading">
+          <span class="asset-dot" aria-hidden="true"></span>
+          <h1 id="assetName">NASDAQ</h1>
+        </div>
+        <p class="signal-action" id="signalAction">HOLD</p>
+        <p class="signal-message" id="signalMessage"></p>
+        <dl class="signal-dates">
+          <div><dt>Beslut</dt><dd id="signalDate">–</dd></div>
+          <div><dt>Gäller från</dt><dd id="effectiveDate">–</dd></div>
+          <div><dt>Marknadsdata</dt><dd id="marketDate">–</dd></div>
+        </dl>
+        <button class="primary-button" id="registerSwitchButton" type="button" hidden>Registrera mitt byte</button>
+      </div>
+    </section>
+
+    <div class="page-width">
+      <section class="onboarding-band" id="onboardingSection" hidden>
+        <p class="eyebrow">DIN EGEN TESTPORTFÖLJ</p>
+        <h2>Följ signalen med dina egna siffror</h2>
+        <p>Portföljen sparas bara på den här enheten och skickas aldrig till App3.</p>
+        <button class="primary-button" id="startButton" type="button">Starta mitt test</button>
+      </section>
+
+      <section id="portfolioSection" hidden aria-labelledby="portfolioTitle">
+        <div class="section-heading">
+          <div><p class="eyebrow">MIN PORTFÖLJ</p><h2 id="portfolioTitle">Min App3-test</h2></div>
+          <button class="secondary-button" id="valuationButton" type="button">Uppdatera värde</button>
+        </div>
+        <div class="portfolio-summary">
+          <div class="holding-summary">
+            <span id="holdingAsset">–</span>
+            <strong id="holdingInstrument">–</strong>
+            <small id="holdingQuantity">–</small>
+          </div>
+          <div class="metric"><span>Startvärde</span><strong id="startValue">–</strong></div>
+          <div class="metric"><span>Aktuellt värde</span><strong id="currentValue">Saknar värdering</strong></div>
+          <div class="metric"><span>Resultat totalt</span><strong id="totalReturn">–</strong></div>
+          <div class="metric"><span>Resultat i år</span><strong id="ytdReturn">–</strong></div>
+        </div>
+      </section>
+
+      <section class="performance-section" id="performanceSection" hidden aria-labelledby="performanceTitle">
+        <div class="section-heading">
+          <div><p class="eyebrow">SEDAN MIN START</p><h2 id="performanceTitle">Utveckling</h2></div>
+          <span class="local-pill">Endast lokalt</span>
+        </div>
+        <div class="chart-legend" aria-label="Grafserier">
+          <span><i class="legend-app3"></i>Mitt App3-resultat</span>
+        </div>
+        <canvas id="performanceChart" role="img" aria-label="Utveckling för min lokala App3-portfölj"></canvas>
+        <p class="chart-note" id="chartNote">Nasdaq- och OMX-jämförelser visas först när validerad benchmarkdata finns. Inga kurvor fabriceras.</p>
+      </section>
+
+      <section class="status-band" aria-labelledby="statusTitle">
+        <div><p class="eyebrow">SYSTEMSTATUS</p><h2 id="statusTitle"><span class="status-light"></span><span id="systemStatus">Kontrollerar</span></h2></div>
+        <dl>
+          <div><dt>Datakvalitet</dt><dd id="dataQuality">–</dd></div>
+          <div><dt>Strategiversion</dt><dd id="strategyVersion">–</dd></div>
+        </dl>
+      </section>
+
+      <section id="historySection" aria-labelledby="historyTitle">
+        <div class="section-heading">
+          <div><p class="eyebrow">HISTORIK</p><h2 id="historyTitle">Signal och transaktioner</h2></div>
+          <button class="secondary-button" id="transactionButton" type="button" hidden>Ny transaktion</button>
+        </div>
+        <div class="history-grid">
+          <div><h3>Signalskiften</h3><div id="signalHistory" class="empty-state">Historiken byggs när appen tar emot signaler.</div></div>
+          <div><h3>Mina transaktioner</h3><div id="transactionHistory" class="empty-state">Starta ditt test för att registrera en transaktion.</div></div>
+        </div>
+      </section>
+
+      <section class="settings-section" id="settingsSection" aria-labelledby="settingsTitle">
+        <p class="eyebrow">INSTÄLLNINGAR</p>
+        <h2 id="settingsTitle">Data och integritet</h2>
+        <p class="privacy-copy">Din portföljinformation lagras lokalt i din webbläsare och skickas inte till App3.</p>
+        <div class="settings-actions">
+          <button class="secondary-button" id="exportButton" type="button">Exportera portfölj</button>
+          <label class="secondary-button file-button">Importera portfölj<input id="importInput" type="file" accept="application/json"></label>
+          <button class="danger-button" id="resetButton" type="button">Radera mitt lokala test</button>
+        </div>
+        <dl class="settings-meta">
+          <div><dt>Appversion</dt><dd>1.0.0</dd></div>
+          <div><dt>Lagring</dt><dd>Den här webbläsaren</dd></div>
+        </dl>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <strong>App3 Tester</strong>
+    <span>Inte investeringsrådgivning. Historisk avkastning är ingen garanti för framtida avkastning.</span>
+  </footer>
+
+  <dialog id="portfolioDialog" aria-labelledby="dialogTitle">
+    <form method="dialog" id="portfolioForm">
+      <div class="dialog-heading"><div><p class="eyebrow">LOKALT PÅ ENHETEN</p><h2 id="dialogTitle">Starta mitt test</h2></div><button class="icon-button" id="closePortfolioDialog" type="button" aria-label="Stäng">×</button></div>
+      <p id="dialogIntro">Registrera ditt första köp. Uppgifterna lämnar aldrig webbläsaren.</p>
+      <label>Transaktion<select name="type"><option value="BUY">Köp</option><option value="SELL">Sälj</option></select></label>
+      <label>Tillgång<select name="asset" id="assetSelect"></select></label>
+      <label>Instrument<input name="instrument" id="instrumentInput" required autocomplete="off"></label>
+      <div class="form-row"><label>Antal<input name="quantity" type="number" min="0.0001" step="0.0001" required inputmode="decimal"></label><label>Inköpskurs<input name="price" type="number" min="0.0001" step="0.0001" required inputmode="decimal"></label></div>
+      <div class="form-row"><label>Valuta<select name="currency" id="currencySelect"><option>SEK</option><option>EUR</option><option>USD</option></select></label><label id="fxLabel">Kurs till SEK<input name="fx_rate_to_sek" type="number" min="0.0001" step="0.0001" value="1" inputmode="decimal"></label></div>
+      <div class="form-row"><label>Datum<input name="date" type="date" required></label><label>Courtage i SEK<input name="fee_sek" type="number" min="0" step="0.01" value="0" inputmode="decimal"></label></div>
+      <label id="startCapitalLabel">Startkapital i SEK, valfritt<input name="start_capital_sek" type="number" min="0.01" step="0.01" inputmode="decimal"></label>
+      <p class="form-error" id="portfolioError" role="alert" hidden></p>
+      <button class="primary-button full-button" value="default" type="submit">Spara lokalt</button>
+    </form>
+  </dialog>
+
+  <dialog id="valuationDialog" aria-labelledby="valuationTitle">
+    <form method="dialog" id="valuationForm">
+      <div class="dialog-heading"><div><p class="eyebrow">MANUELL VÄRDERING</p><h2 id="valuationTitle">Uppdatera värde</h2></div><button class="icon-button" id="closeValuationDialog" type="button" aria-label="Stäng">×</button></div>
+      <p>Ingen kurs hämtas automatiskt. Ange en verifierad marknadskurs för ditt instrument.</p>
+      <label>Instrument<select name="instrument" id="valuationInstrument"></select></label>
+      <div class="form-row"><label>Aktuell kurs<input name="price" type="number" min="0.0001" step="0.0001" required inputmode="decimal"></label><label>Datum<input name="date" type="date" required></label></div>
+      <div class="form-row"><label>Valuta<select name="currency"><option>SEK</option><option>EUR</option><option>USD</option></select></label><label>Kurs till SEK<input name="fx_rate_to_sek" type="number" min="0.0001" step="0.0001" value="1" required inputmode="decimal"></label></div>
+      <p class="form-error" id="valuationError" role="alert" hidden></p>
+      <button class="primary-button full-button" value="default" type="submit">Spara värdering</button>
+    </form>
+  </dialog>
+
+  <script type="module" src="./src/app.js?v=1.0.0"></script>
+</body>
+</html>
