@@ -1,16 +1,16 @@
-const CACHE = "app3-tester-v1.1.0";
+const CACHE = "app3-tester-v1.1.1";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./manifest.json",
-  "./src/styles.css?v=1.1.0",
-  "./src/app.js?v=1.1.0",
+  "./src/styles.css?v=1.1.1",
+  "./src/app.js?v=1.1.1",
   "./src/signal.js",
   "./src/storage.js",
   "./src/portfolio.js",
   "./src/asset_registry.js",
-  "./src/charts.js",
-  "./src/benchmark_data.js",
+  "./src/charts.js?v=1.1.1",
+  "./src/benchmark_data.js?v=1.1.1",
   "./data/asset_registry.json",
   "./assets/icons/app3.svg"
 ];

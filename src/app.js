@@ -1,5 +1,5 @@
 import { loadAssetRegistry } from "./asset_registry.js";
-import { loadBenchmarkData } from "./benchmark_data.js";
+import { loadBenchmarkData } from "./benchmark_data.js?v=1.1.1";
 import { assessSignal, signalViewModel } from "./signal.js";
 import { createPortfolioStore } from "./storage.js";
 import {
@@ -11,7 +11,7 @@ import {
   rememberSignal,
   transactionValueSek,
 } from "./portfolio.js";
-import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js";
+import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js?v=1.1.1";
 
 const $ = (id) => document.getElementById(id);
 const store = createPortfolioStore(window.localStorage);
@@ -382,4 +382,4 @@ window.addEventListener("resize", renderChart);
 
 applyTheme(portfolio.settings.theme);
 loadPublicData();
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js");
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=1.1.1");
