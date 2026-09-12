@@ -8,7 +8,7 @@
   <title>App3 Tester</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./assets/icons/app3.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./src/styles.css?v=1.0.1">
+  <link rel="stylesheet" href="./src/styles.css?v=1.1.0">
 </head>
 <body>
   <a class="skip-link" href="#main">Hoppa till innehåll</a>
@@ -89,10 +89,17 @@
           <span class="local-pill">Endast lokalt</span>
         </div>
         <div class="chart-legend" aria-label="Grafserier">
-          <span><i class="legend-app3"></i>Mitt App3-resultat</span>
+          <span><i class="legend-app3"></i>App3: grön Nasdaq / röd OMX</span>
+          <span><i class="legend-nasdaq"></i>EQQQ buy &amp; hold</span>
+          <span><i class="legend-omx"></i>XACT OMX buy &amp; hold</span>
+        </div>
+        <div class="chart-metrics" aria-label="Utveckling sedan start">
+          <div><span>App3</span><strong id="app3ChartReturn">–</strong></div>
+          <div><span>EQQQ B&amp;H</span><strong id="nasdaqChartReturn">–</strong></div>
+          <div><span>XACT OMX B&amp;H</span><strong id="omxChartReturn">–</strong></div>
         </div>
         <canvas id="performanceChart" role="img" aria-label="Utveckling för min lokala App3-portfölj"></canvas>
-        <p class="chart-note" id="chartNote">Nasdaq- och OMX-jämförelser visas först när validerad benchmarkdata finns. Inga kurvor fabriceras.</p>
+        <p class="chart-note" id="chartNote">Laddar validerad benchmarkdata.</p>
       </section>
 
       <section class="status-band" aria-labelledby="statusTitle">
@@ -124,7 +131,7 @@
           <button class="danger-button" id="resetButton" type="button">Radera mitt lokala test</button>
         </div>
         <dl class="settings-meta">
-          <div><dt>Appversion</dt><dd>1.0.1</dd></div>
+          <div><dt>Appversion</dt><dd>1.1.0</dd></div>
           <div><dt>Lagring</dt><dd>Den här webbläsaren</dd></div>
         </dl>
       </section>
@@ -164,6 +171,6 @@
     </form>
   </dialog>
 
-  <script type="module" src="./src/app.js?v=1.0.1"></script>
+  <script type="module" src="./src/app.js?v=1.1.0"></script>
 </body>
 </html>

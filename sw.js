@@ -1,15 +1,16 @@
-const CACHE = "app3-tester-v1.0.1";
+const CACHE = "app3-tester-v1.1.0";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./manifest.json",
-  "./src/styles.css?v=1.0.1",
-  "./src/app.js?v=1.0.1",
+  "./src/styles.css?v=1.1.0",
+  "./src/app.js?v=1.1.0",
   "./src/signal.js",
   "./src/storage.js",
   "./src/portfolio.js",
   "./src/asset_registry.js",
   "./src/charts.js",
+  "./src/benchmark_data.js",
   "./data/asset_registry.json",
   "./assets/icons/app3.svg"
 ];
@@ -26,7 +27,7 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
-  if (url.pathname.endsWith("/data/app3_signal.json")) {
+  if (url.pathname.endsWith("/data/app3_signal.json") || url.pathname.endsWith("/data/benchmark_series.json")) {
     event.respondWith(fetch(event.request, { cache: "no-store" }));
     return;
   }

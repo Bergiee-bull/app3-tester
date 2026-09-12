@@ -4,6 +4,7 @@ import fs from "node:fs";
 
 const root = new URL("../", import.meta.url);
 const signalText = fs.readFileSync(new URL("data/app3_signal.json", root), "utf8");
+const benchmarkText = fs.readFileSync(new URL("data/benchmark_series.json", root), "utf8");
 const signal = JSON.parse(signalText);
 const appSource = fs.readFileSync(new URL("src/app.js", root), "utf8");
 const index = fs.readFileSync(new URL("index.html", root), "utf8");
@@ -17,6 +18,12 @@ test("public signal has no private fields", () => {
   const lower = signalText.toLowerCase();
   forbidden.forEach((field) => assert.equal(lower.includes(`\"${field}\"`), false, field));
   assert.deepEqual(Object.keys(signal).sort(), ["generated_at", "is_sample_data", "schema_version", "signal", "strategy", "system"]);
+});
+
+test("public benchmark export has no private portfolio data or paths", () => {
+  const lower = benchmarkText.toLowerCase();
+  ["/users/", "quantity", "purchase_price", "starting_value_sek", "current_value_sek", "telegram", "token", "secret"]
+    .forEach((term) => assert.equal(lower.includes(term), false, term));
 });
 
 test("frontend contains no strategy engine or production mutation path", () => {
@@ -39,6 +46,13 @@ test("UI exposes the exact selectable ETF for each market", () => {
   assert.match(index, /ETF att äga enligt signalen/);
   assert.match(index, /ETF\/instrument/);
   assert.match(appSource, /asset\.instrument_name/);
+});
+
+test("UI exposes App3 and two buy-and-hold comparison series", () => {
+  assert.match(index, /App3: grön Nasdaq \/ röd OMX/);
+  assert.match(index, /EQQQ buy &amp; hold/);
+  assert.match(index, /XACT OMX buy &amp; hold/);
+  assert.match(appSource, /loadBenchmarkData/);
 });
 
 test("privacy statement matches local-only implementation", () => {

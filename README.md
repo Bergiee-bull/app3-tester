@@ -113,10 +113,29 @@ V1 does not fetch security prices. Users add a verified current price and FX
 rate through **Uppdatera värde**. Until a held instrument has a valuation, the
 current value and return remain unavailable rather than being fabricated.
 
-The chart shows the user's local valuation snapshots. Nasdaq and OMX benchmark
-lines are intentionally absent until a validated public benchmark dataset is
-added. Market data may later value holdings and draw benchmarks, but it must
-never calculate an App3 signal in this app.
+The chart compares the user's local App3 valuation snapshots with two public
+buy-and-hold benchmarks. All three series start at 0% on the first common
+completed trading date on or after the user's locally stored first purchase:
+
+- App3 is green while the recorded holding is Nasdaq and red while it is OMX.
+- Nasdaq buy-and-hold uses `EQQQ.DE` Adjusted Close converted to SEK with
+  `EURSEK=X`.
+- OMX buy-and-hold uses `XACT-OMXS30.ST` Adjusted Close in SEK.
+
+The two benchmark lines use separate grey shades. Thin vertical markers show
+recorded App3 asset switches. Benchmark data is public, contains no user
+portfolio values, and is rejected if marked as sample data or if provenance
+validation fails. Yahoo Adjusted Close may differ from actual account returns
+because of fees, tax, spread, and provider adjustments.
+
+Refresh the sanitized public benchmark file with:
+
+```bash
+python3 scripts/export_public_benchmarks.py
+```
+
+This optional maintenance command requires `pandas` and `yfinance`. Market data
+never calculates an App3 signal in this public app.
 
 ## Local Development
 
@@ -164,7 +183,8 @@ workflow. Never copy the internal decision JSON into this repository.
 npm test
 ```
 
-Tests cover schema validation, strategy-independent rendering, NASDAQ and OMX,
+Tests cover schema and benchmark validation, synchronized buy-and-hold start
+dates, strategy-independent rendering, NASDAQ and OMX,
 HOLD and SWITCH, stale/failed/sample data, local persistence, transaction
 calculation, strategy migration, registry validation, backup/reset, privacy,
 fail-closed behavior, PWA metadata, and responsive accessibility hooks.

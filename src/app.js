@@ -1,4 +1,5 @@
 import { loadAssetRegistry } from "./asset_registry.js";
+import { loadBenchmarkData } from "./benchmark_data.js";
 import { assessSignal, signalViewModel } from "./signal.js";
 import { createPortfolioStore } from "./storage.js";
 import {
@@ -10,13 +11,15 @@ import {
   rememberSignal,
   transactionValueSek,
 } from "./portfolio.js";
-import { drawPerformanceChart } from "./charts.js";
+import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js";
 
 const $ = (id) => document.getElementById(id);
 const store = createPortfolioStore(window.localStorage);
 let portfolio = store.load();
 let publicSignal = null;
 let registry = null;
+let benchmarkData = null;
+let benchmarkError = null;
 let signalAssessment = { verified: false };
 
 function formatDate(value) {
@@ -174,7 +177,23 @@ function renderSignalHistory() {
 
 function renderChart() {
   if ($("performanceSection").hidden) return;
-  drawPerformanceChart($("performanceChart"), portfolio.snapshots);
+  const comparison = buildPerformanceComparison(portfolio, benchmarkData);
+  drawPerformanceChart($("performanceChart"), comparison);
+  setReturn($("app3ChartReturn"), comparison.latest.app3);
+  setReturn($("nasdaqChartReturn"), comparison.latest.nasdaq);
+  setReturn($("omxChartReturn"), comparison.latest.omx);
+  if (benchmarkError) {
+    $("chartNote").textContent = `${benchmarkError} App3-värden visas utan benchmark.`;
+  } else if (!comparison.comparisonStartDate) {
+    $("chartNote").textContent = "Benchmarkkurvorna börjar när validerad marknadsdata finns för ditt lokala startdatum.";
+  } else {
+    const startText = formatDate(comparison.comparisonStartDate);
+    const shifted = comparison.comparisonStartDate !== comparison.requestedStartDate
+      ? ` Första gemensamma handelsdag efter ditt köp är ${startText}.`
+      : "";
+    const latestText = formatDate(benchmarkData.latest_common_trading_date);
+    $("chartNote").textContent = `Alla kurvor är normaliserade till 0 % från ditt App3-köp.${shifted} EQQQ och XACT OMXS30 ESG använder Adjusted Close i SEK. Benchmarkdata t.o.m. ${latestText}.`;
+  }
 }
 
 function updateSwitchButton(holdings) {
@@ -323,10 +342,15 @@ function resetPortfolio() {
 
 async function loadPublicData() {
   try {
+    const benchmarkPromise = loadBenchmarkData().catch((error) => {
+      benchmarkError = error.message;
+      return null;
+    });
     registry = await loadAssetRegistry();
     const response = await fetch("./data/app3_signal.json", { cache: "no-store" });
     if (!response.ok) throw new Error("Den publika signalfilen kunde inte laddas.");
     publicSignal = await response.json();
+    benchmarkData = await benchmarkPromise;
     signalAssessment = assessSignal(publicSignal, registry);
     if (signalAssessment.verified) {
       portfolio = store.save(rememberSignal(portfolio, publicSignal));

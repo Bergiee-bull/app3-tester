@@ -99,9 +99,17 @@ dd { margin: 3px 0 0; font-weight: 700; }
 .metric strong { font-size: 1.08rem; overflow-wrap: anywhere; }
 .positive { color: var(--accent); }
 .negative { color: var(--danger); }
-.performance-section canvas { width: 100%; height: 220px; display: block; border: 1px solid var(--line); border-radius: var(--radius); }
-.chart-legend { display: flex; gap: 18px; margin: 0 0 12px; color: var(--text-muted); font-size: .8rem; }
-.chart-legend i { display: inline-block; width: 16px; height: 3px; background: var(--accent); vertical-align: middle; margin-right: 6px; }
+.performance-section canvas { width: 100%; height: 300px; display: block; border: 1px solid var(--line); border-radius: var(--radius); }
+.chart-legend { display: flex; flex-wrap: wrap; gap: 9px 18px; margin: 0 0 14px; color: var(--text-muted); font-size: .8rem; }
+.chart-legend i { display: inline-block; width: 16px; height: 3px; vertical-align: middle; margin-right: 6px; }
+.legend-app3 { background: linear-gradient(90deg, #16a673 0 50%, #d94d55 50% 100%); }
+.legend-nasdaq { background: #69726f; }
+.legend-omx { background: #aeb5b2; }
+.chart-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 0 12px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.chart-metrics > div { display: grid; gap: 2px; padding: 10px 12px; border-right: 1px solid var(--line); }
+.chart-metrics > div:last-child { border-right: 0; }
+.chart-metrics span { color: var(--text-muted); font-size: .72rem; }
+.chart-metrics strong { font-size: .95rem; }
 .chart-note { color: var(--text-muted); font-size: .78rem; }
 .status-band { display: flex; justify-content: space-between; gap: 28px; }
 .status-band h2 { display: flex; align-items: center; gap: 10px; }
@@ -156,6 +164,9 @@ input, select { width: 100%; border: 1px solid var(--line); border-radius: var(-
   .settings-actions > * { width: 100%; justify-content: center; }
   .history-row { grid-template-columns: 88px minmax(0, 1fr); gap: 5px 10px; }
   .history-row small { grid-column: 2; overflow-wrap: anywhere; }
+  .chart-metrics { grid-template-columns: 1fr; }
+  .chart-metrics > div { grid-template-columns: 1fr auto; align-items: center; border-right: 0; border-bottom: 1px solid var(--line); }
+  .chart-metrics > div:last-child { border-bottom: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
