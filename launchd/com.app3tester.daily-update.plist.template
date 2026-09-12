@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.app3tester.daily-update</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>__REPO_PATH__/scripts/update_and_publish_daily.sh</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>__REPO_PATH__</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>APP3_PRODUCTION_ROOT</key>
+    <string>__PRODUCTION_ROOT__</string>
+    <key>TZ</key>
+    <string>Europe/Stockholm</string>
+  </dict>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>7</integer>
+    <key>Minute</key>
+    <integer>15</integer>
+  </dict>
+  <key>StandardOutPath</key>
+  <string>__REPO_PATH__/data/logs/app3_tester_daily.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>__REPO_PATH__/data/logs/app3_tester_daily.err.log</string>
+</dict>
+</plist>

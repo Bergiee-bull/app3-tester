@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   addValuation,
+  applyAutomaticValuations,
   calculatePortfolio,
   holdingsFromTransactions,
   normalizeTransaction,
@@ -62,4 +63,68 @@ test("missing market valuation never fabricates current value", () => {
   const result = calculatePortfolio({ ...emptyPortfolio(), started_at: "2026-09-12", start_capital_sek: 1010, transactions: [buy()] });
   assert.equal(result.currentValueSek, null);
   assert.equal(result.totalReturnPct, null);
+});
+
+test("automatic EQQQ valuation converts the real EUR close with EUR/SEK", () => {
+  const portfolio = {
+    ...emptyPortfolio(),
+    started_at: "2026-09-01",
+    start_capital_sek: 1000,
+    transactions: [buy({ instrument: "EQQQ", quantity: 1, price: 100, currency: "EUR", fx_rate_to_sek: 10, fee_sek: 0 })],
+  };
+  const next = applyAutomaticValuations(portfolio, {
+    is_sample_data: false,
+    data_quality: "PASS",
+    latest_valuations: {
+      NASDAQ: {
+        asset: "NASDAQ", instrument: "EQQQ", date: "2026-09-10", price: 110,
+        currency: "EUR", fx_rate_to_sek: 10.5, source: "Yahoo", provider_symbol: "EQQQ.DE",
+        is_sample_data: false,
+      },
+    },
+  });
+  assert.equal(calculatePortfolio(next).currentValueSek, 1155);
+  assert.equal(next.valuations.at(-1).automatic, true);
+  assert.equal(next.valuations.at(-1).provider_symbol, "EQQQ.DE");
+  assert.equal(next.snapshots.at(-1).date, "2026-09-10");
+});
+
+test("automatic valuation refuses sample market data", () => {
+  const portfolio = {
+    ...emptyPortfolio(),
+    started_at: "2026-09-01",
+    start_capital_sek: 1000,
+    transactions: [buy({ instrument: "EQQQ", currency: "EUR", fx_rate_to_sek: 10, fee_sek: 0 })],
+  };
+  const next = applyAutomaticValuations(portfolio, {
+    is_sample_data: true,
+    data_quality: "PASS",
+    latest_valuations: {},
+  });
+  assert.deepEqual(next, portfolio);
+});
+
+test("manual valuation on the same date overrides the automatic quote", () => {
+  let portfolio = {
+    ...emptyPortfolio(),
+    started_at: "2026-09-01",
+    start_capital_sek: 1000,
+    transactions: [buy({ instrument: "EQQQ", quantity: 1, price: 100, currency: "EUR", fx_rate_to_sek: 10, fee_sek: 0 })],
+  };
+  portfolio = addValuation(portfolio, {
+    instrument: "EQQQ", date: "2026-09-10", price: 120, currency: "EUR", fx_rate_to_sek: 10,
+  });
+  const next = applyAutomaticValuations(portfolio, {
+    is_sample_data: false,
+    data_quality: "PASS",
+    latest_valuations: {
+      NASDAQ: {
+        asset: "NASDAQ", instrument: "EQQQ", date: "2026-09-10", price: 110,
+        currency: "EUR", fx_rate_to_sek: 10.5, source: "Yahoo", provider_symbol: "EQQQ.DE",
+        is_sample_data: false,
+      },
+    },
+  });
+  assert.equal(calculatePortfolio(next).currentValueSek, 1200);
+  assert.equal(next.valuations.at(-1).automatic, false);
 });

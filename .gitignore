@@ -2,4 +2,5 @@
 node_modules/
 coverage/
 *.log
+data/logs/*.log
 .env

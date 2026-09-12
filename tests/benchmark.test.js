@@ -12,12 +12,26 @@ test("public benchmark data is validated and never sample data", () => {
   assert.equal(benchmarks.data_quality, "PASS");
   assert.equal(benchmarks.benchmarks.NASDAQ.adjusted_close_available, true);
   assert.equal(benchmarks.benchmarks.OMX.adjusted_close_available, true);
+  assert.equal(benchmarks.latest_valuations.NASDAQ.currency, "EUR");
+  assert.ok(benchmarks.latest_valuations.NASDAQ.fx_rate_to_sek > 0);
+  assert.equal(benchmarks.latest_valuations.OMX.currency, "SEK");
+  assert.equal(benchmarks.latest_valuations.OMX.fx_rate_to_sek, 1);
 });
 
 test("sample benchmark data fails closed", () => {
   const sample = structuredClone(benchmarks);
   sample.is_sample_data = true;
   assert.equal(validateBenchmarkData(sample), false);
+});
+
+test("sample or malformed automatic valuations fail closed", () => {
+  const sampleQuote = structuredClone(benchmarks);
+  sampleQuote.latest_valuations.NASDAQ.is_sample_data = true;
+  assert.equal(validateBenchmarkData(sampleQuote), false);
+
+  const missingFx = structuredClone(benchmarks);
+  delete missingFx.latest_valuations.NASDAQ.fx_rate_to_sek;
+  assert.equal(validateBenchmarkData(missingFx), false);
 });
 
 test("benchmarks start together from the first common date on or after the App3 purchase", () => {

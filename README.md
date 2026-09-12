@@ -109,9 +109,18 @@ The first purchase records instrument, date, quantity, price, currency, FX rate
 to SEK, and fee. BUY and SELL are supported in the UI. The local data model is
 prepared for DIVIDEND and CASH_ADJUSTMENT.
 
-V1 does not fetch security prices. Users add a verified current price and FX
-rate through **Uppdatera värde**. Until a held instrument has a valuation, the
-current value and return remain unavailable rather than being fabricated.
+The public market-data export includes the latest validated closing prices for
+both selectable ETFs. When the app opens, it values a local EQQQ holding as
+`quantity × EQQQ close in EUR × EUR/SEK` and a local XACT OMXS30 holding as
+`quantity × close in SEK`. The quote date, ETF price, and FX rate are shown
+under the current value. **Uppdatera värde** remains available as a manual
+fallback.
+
+The automatic quote never contains or receives a user's quantity, purchase
+price, account value, or return. Those inputs stay in `localStorage`; the
+calculation happens in the browser. Because EQQQ is distributing, cash
+distributions must be recorded locally before they are reflected in the actual
+portfolio value. Benchmark curves use provider-reported Adjusted Close.
 
 The chart compares the user's local App3 valuation snapshots with two public
 buy-and-hold benchmarks. All three series start at 0% on the first common
@@ -136,6 +145,45 @@ python3 scripts/export_public_benchmarks.py
 
 This optional maintenance command requires `pandas` and `yfinance`. Market data
 never calculates an App3 signal in this public app.
+
+## Daily 07:15 Update
+
+The local Mac publisher runs every day at **07:15 Europe/Stockholm**. It uses a
+fail-closed chain:
+
+1. Export the sanitized App3 signal from the private production workspace.
+2. Fetch EQQQ, XACT OMXS30, and EUR/SEK through `yfinance`.
+3. Validate both public JSON files and reject sample data.
+4. Run all tests.
+5. Commit only `data/app3_signal.json` and `data/benchmark_series.json`.
+6. Push `main`, after which GitHub Actions deploys GitHub Pages.
+
+Test the complete chain without changing or publishing files:
+
+```bash
+APP3_PRODUCTION_ROOT=/path/to/private/workspace \
+  bash scripts/update_and_publish_daily.sh --dry-run
+```
+
+Install the macOS LaunchAgent:
+
+```bash
+APP3_PRODUCTION_ROOT=/path/to/private/workspace \
+  bash scripts/install_daily_update_agent.sh
+```
+
+Inspect status and logs:
+
+```bash
+launchctl print gui/$(id -u)/com.app3tester.daily-update
+tail -f data/logs/app3_tester_daily.out.log
+tail -f data/logs/app3_tester_daily.err.log
+```
+
+Remove the schedule with `bash scripts/uninstall_daily_update_agent.sh`. The Mac
+must be running with network access and valid Git credentials. A failed signal
+export, provenance check, price/FX fetch, test, or push stops the chain; stale or
+invalid data is never published as a successful update.
 
 ## Local Development
 

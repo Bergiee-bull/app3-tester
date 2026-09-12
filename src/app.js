@@ -1,17 +1,18 @@
 import { loadAssetRegistry } from "./asset_registry.js";
-import { loadBenchmarkData } from "./benchmark_data.js?v=1.1.1";
+import { loadBenchmarkData } from "./benchmark_data.js?v=1.2.1";
 import { assessSignal, signalViewModel } from "./signal.js";
 import { createPortfolioStore } from "./storage.js";
 import {
   addValuation,
+  applyAutomaticValuations,
   calculatePortfolio,
   holdingsFromTransactions,
   normalizeTransaction,
   recordSnapshot,
   rememberSignal,
   transactionValueSek,
-} from "./portfolio.js";
-import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js?v=1.1.1";
+} from "./portfolio.js?v=1.2.1";
+import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js?v=1.2.1";
 
 const $ = (id) => document.getElementById(id);
 const store = createPortfolioStore(window.localStorage);
@@ -118,6 +119,24 @@ function renderPortfolio() {
     : "–";
   $("startValue").textContent = formatSek(result.startCapitalSek);
   $("currentValue").textContent = formatSek(result.currentValueSek);
+  const latestValuation = holding
+    ? [...(portfolio.valuations || [])]
+      .filter((value) => value.instrument === holding.instrument)
+      .sort((a, b) => b.date.localeCompare(a.date))[0]
+    : null;
+  if (latestValuation?.automatic) {
+    const price = new Intl.NumberFormat("sv-SE", { minimumFractionDigits: 2, maximumFractionDigits: 4 })
+      .format(latestValuation.price);
+    const fx = new Intl.NumberFormat("sv-SE", { minimumFractionDigits: 4, maximumFractionDigits: 4 })
+      .format(latestValuation.fx_rate_to_sek);
+    $("valuationSource").textContent = latestValuation.currency === "EUR"
+      ? `Auto ${formatDate(latestValuation.date)}: ${price} EUR × EUR/SEK ${fx}`
+      : `Auto ${formatDate(latestValuation.date)}: ${price} SEK`;
+  } else {
+    $("valuationSource").textContent = latestValuation
+      ? `Manuell värdering ${formatDate(latestValuation.date)}`
+      : "Ingen marknadskurs ännu";
+  }
   setReturn($("totalReturn"), result.totalReturnPct);
   setReturn($("ytdReturn"), result.ytdReturnPct);
   renderTransactions();
@@ -266,6 +285,7 @@ function saveTransaction(event) {
       fx_rate_to_sek: transaction.fx_rate_to_sek,
     });
     next = recordSnapshot(next, transaction.date);
+    if (benchmarkData) next = applyAutomaticValuations(next, benchmarkData);
     portfolio = store.save(next);
     form.reset();
     $("portfolioDialog").close();
@@ -323,6 +343,7 @@ async function importPortfolio(event) {
   if (!file) return;
   try {
     portfolio = store.importJson(await file.text());
+    if (benchmarkData) portfolio = store.save(applyAutomaticValuations(portfolio, benchmarkData));
     applyTheme(portfolio.settings.theme);
     renderPortfolio();
     renderSignalHistory();
@@ -347,10 +368,13 @@ async function loadPublicData() {
       return null;
     });
     registry = await loadAssetRegistry();
+    benchmarkData = await benchmarkPromise;
+    if (benchmarkData && portfolio.started_at) {
+      portfolio = store.save(applyAutomaticValuations(portfolio, benchmarkData));
+    }
     const response = await fetch("./data/app3_signal.json", { cache: "no-store" });
     if (!response.ok) throw new Error("Den publika signalfilen kunde inte laddas.");
     publicSignal = await response.json();
-    benchmarkData = await benchmarkPromise;
     signalAssessment = assessSignal(publicSignal, registry);
     if (signalAssessment.verified) {
       portfolio = store.save(rememberSignal(portfolio, publicSignal));
@@ -382,4 +406,4 @@ window.addEventListener("resize", renderChart);
 
 applyTheme(portfolio.settings.theme);
 loadPublicData();
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=1.1.1");
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=1.2.1");

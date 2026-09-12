@@ -9,6 +9,8 @@ const signal = JSON.parse(signalText);
 const appSource = fs.readFileSync(new URL("src/app.js", root), "utf8");
 const index = fs.readFileSync(new URL("index.html", root), "utf8");
 const css = fs.readFileSync(new URL("src/styles.css", root), "utf8");
+const publisher = fs.readFileSync(new URL("scripts/update_and_publish_daily.sh", root), "utf8");
+const launchd = fs.readFileSync(new URL("launchd/com.app3tester.daily-update.plist.template", root), "utf8");
 
 test("public signal has no private fields", () => {
   const forbidden = [
@@ -53,6 +55,23 @@ test("UI exposes App3 and two buy-and-hold comparison series", () => {
   assert.match(index, /EQQQ buy &amp; hold/);
   assert.match(index, /XACT OMX buy &amp; hold/);
   assert.match(appSource, /loadBenchmarkData/);
+});
+
+test("daily updater is scheduled for 07:15 Europe/Stockholm", () => {
+  assert.match(launchd, /<key>Hour<\/key>\s*<integer>7<\/integer>/);
+  assert.match(launchd, /<key>Minute<\/key>\s*<integer>15<\/integer>/);
+  assert.match(launchd, /Europe\/Stockholm/);
+  assert.match(publisher, /app3_export_public_signal\.py/);
+  assert.match(publisher, /export_public_benchmarks\.py/);
+  assert.match(publisher, /npm|NPM_BIN/);
+  assert.match(publisher, /data\/app3_signal\.json\|data\/benchmark_series\.json/);
+});
+
+test("automatic market valuation is displayed with EUR/SEK provenance", () => {
+  assert.match(index, /Dagligen 07:15/);
+  assert.match(index, /valuationSource/);
+  assert.match(appSource, /EUR\/SEK/);
+  assert.match(appSource, /applyAutomaticValuations/);
 });
 
 test("privacy statement matches local-only implementation", () => {

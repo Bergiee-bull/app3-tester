@@ -93,11 +93,46 @@ export function addValuation(portfolio, input) {
     price: number(input.price, "Aktuell kurs"),
     currency,
     fx_rate_to_sek: currency === "SEK" ? 1 : number(input.fx_rate_to_sek, "Valutakurs"),
+    source: input.source ? String(input.source) : "manual",
+    automatic: input.automatic === true,
+    provider_symbol: input.provider_symbol ? String(input.provider_symbol) : null,
   };
   if (!valuation.instrument || !/^\d{4}-\d{2}-\d{2}$/.test(valuation.date)) throw new Error("Värderingen är ofullständig.");
   const valuations = (portfolio.valuations || []).filter((row) => !(row.instrument === valuation.instrument && row.date === valuation.date));
   valuations.push(valuation);
   return { ...portfolio, valuations };
+}
+
+export function applyAutomaticValuations(portfolio, benchmarkData) {
+  if (!portfolio?.started_at || benchmarkData?.is_sample_data !== false || benchmarkData?.data_quality !== "PASS") {
+    return portfolio;
+  }
+  const holdings = holdingsFromTransactions(portfolio.transactions || []);
+  let next = portfolio;
+  let latestAppliedDate = null;
+  for (const holding of holdings) {
+    const quote = benchmarkData.latest_valuations?.[holding.asset];
+    if (!quote || quote.is_sample_data !== false || quote.date < portfolio.started_at) continue;
+    const manualOverride = (next.valuations || []).some((value) => (
+      value.instrument === holding.instrument && value.date === quote.date && value.automatic !== true
+    ));
+    if (manualOverride) {
+      latestAppliedDate = !latestAppliedDate || quote.date > latestAppliedDate ? quote.date : latestAppliedDate;
+      continue;
+    }
+    next = addValuation(next, {
+      instrument: holding.instrument,
+      date: quote.date,
+      price: quote.price,
+      currency: quote.currency,
+      fx_rate_to_sek: quote.fx_rate_to_sek,
+      source: quote.source,
+      automatic: true,
+      provider_symbol: quote.provider_symbol,
+    });
+    latestAppliedDate = !latestAppliedDate || quote.date > latestAppliedDate ? quote.date : latestAppliedDate;
+  }
+  return latestAppliedDate ? recordSnapshot(next, latestAppliedDate) : next;
 }
 
 export function recordSnapshot(portfolio, date) {

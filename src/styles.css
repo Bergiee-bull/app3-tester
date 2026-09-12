@@ -97,6 +97,7 @@ dd { margin: 3px 0 0; font-weight: 700; }
 .holding-summary small { margin-top: 6px; }
 .metric { display: grid; align-content: center; gap: 5px; }
 .metric strong { font-size: 1.08rem; overflow-wrap: anywhere; }
+.metric small { color: var(--text-muted); font-size: .68rem; line-height: 1.35; overflow-wrap: anywhere; }
 .positive { color: var(--accent); }
 .negative { color: var(--danger); }
 .performance-section canvas { width: 100%; height: 300px; display: block; border: 1px solid var(--line); border-radius: var(--radius); }

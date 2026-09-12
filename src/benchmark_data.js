@@ -7,6 +7,7 @@ const REQUIRED_KEYS = [
   "return_basis",
   "latest_common_trading_date",
   "benchmarks",
+  "latest_valuations",
   "observations",
 ];
 
@@ -32,15 +33,34 @@ function validProvenance(value, asset) {
     && value.row_count > 1;
 }
 
+function validValuation(value, asset, instrument, currency) {
+  return value
+    && value.asset === asset
+    && value.instrument === instrument
+    && typeof value.provider_symbol === "string"
+    && value.provider_symbol.trim()
+    && validDate(value.date)
+    && Number.isFinite(value.price)
+    && value.price > 0
+    && value.currency === currency
+    && Number.isFinite(value.fx_rate_to_sek)
+    && value.fx_rate_to_sek > 0
+    && typeof value.source === "string"
+    && value.source.trim()
+    && value.is_sample_data === false;
+}
+
 export function validateBenchmarkData(payload) {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) return false;
   if (!REQUIRED_KEYS.every((key) => Object.hasOwn(payload, key))) return false;
-  if (payload.schema_version !== 1 || payload.is_sample_data !== false) return false;
+  if (payload.schema_version !== 2 || payload.is_sample_data !== false) return false;
   if (payload.data_quality !== "PASS" || payload.currency !== "SEK") return false;
   if (typeof payload.generated_at !== "string" || Number.isNaN(Date.parse(payload.generated_at))) return false;
   if (!validDate(payload.latest_common_trading_date)) return false;
   if (!validProvenance(payload.benchmarks?.NASDAQ, "NASDAQ")) return false;
   if (!validProvenance(payload.benchmarks?.OMX, "OMX")) return false;
+  if (!validValuation(payload.latest_valuations?.NASDAQ, "NASDAQ", "EQQQ", "EUR")) return false;
+  if (!validValuation(payload.latest_valuations?.OMX, "OMX", "XACT OMXS30", "SEK")) return false;
   if (!Array.isArray(payload.observations) || payload.observations.length < 2) return false;
   if (payload.benchmarks.NASDAQ.row_count !== payload.observations.length) return false;
   if (payload.benchmarks.OMX.row_count !== payload.observations.length) return false;
@@ -58,7 +78,9 @@ export function validateBenchmarkData(payload) {
     && payload.benchmarks.NASDAQ.first_date === firstDate
     && payload.benchmarks.OMX.first_date === firstDate
     && payload.benchmarks.NASDAQ.last_date === lastDate
-    && payload.benchmarks.OMX.last_date === lastDate;
+    && payload.benchmarks.OMX.last_date === lastDate
+    && payload.latest_valuations.NASDAQ.date >= lastDate
+    && payload.latest_valuations.OMX.date >= lastDate;
 }
 
 export async function loadBenchmarkData(fetchImpl = fetch) {
