@@ -66,6 +66,11 @@ h3 { font-size: 1rem; margin: 0 0 12px; }
 .signal-action { color: #39c58f; font-size: 1.05rem; font-weight: 850; margin: 12px 0 0; }
 .signal-shell.omx .signal-action { color: #f06d74; }
 .signal-message { color: #c9d8d3; max-width: 620px; margin: 15px 0 30px; }
+.signal-instrument { display: grid; gap: 3px; max-width: 620px; margin: 0 0 26px; padding-left: 14px; border-left: 3px solid #39c58f; }
+.signal-shell.omx .signal-instrument { border-left-color: #f06d74; }
+.signal-instrument span { color: #8ea49d; font-size: .7rem; font-weight: 800; }
+.signal-instrument strong { font-size: 1.05rem; overflow-wrap: anywhere; }
+.signal-instrument small { color: #c9d8d3; }
 .signal-dates { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 620px; margin: 0 0 28px; }
 dl { margin: 0; }
 dt { color: var(--text-muted); font-size: .75rem; }

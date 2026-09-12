@@ -35,6 +35,12 @@ test("PWA and responsive accessibility hooks exist", () => {
   assert.match(css, /min-height: 44px/);
 });
 
+test("UI exposes the exact selectable ETF for each market", () => {
+  assert.match(index, /ETF att äga enligt signalen/);
+  assert.match(index, /ETF\/instrument/);
+  assert.match(appSource, /asset\.instrument_name/);
+});
+
 test("privacy statement matches local-only implementation", () => {
   assert.match(index, /lagras lokalt i din webbläsare/);
   assert.match(appSource, /window\.localStorage/);

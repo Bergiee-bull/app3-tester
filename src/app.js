@@ -83,6 +83,8 @@ function renderSignal() {
   $("assetName").textContent = view.assetName.toUpperCase();
   $("signalAction").textContent = view.action;
   $("signalMessage").textContent = view.message;
+  $("signalInstrumentName").textContent = view.instrumentName;
+  $("signalInstrumentTicker").textContent = `Ticker: ${view.instrumentTicker}`;
   $("signalDate").textContent = formatDate(view.signalDate);
   $("effectiveDate").textContent = formatDate(view.effectiveDate);
   $("marketDate").textContent = formatDate(view.marketDate);
@@ -105,9 +107,12 @@ function renderPortfolio() {
     return;
   }
   const holding = result.holdings[0];
-  $("holdingAsset").textContent = holding ? registry?.[holding.asset]?.display_name || holding.asset : "Ingen investerad tillgång";
-  $("holdingInstrument").textContent = holding?.instrument || "Kassa";
-  $("holdingQuantity").textContent = holding ? `${holding.quantity.toLocaleString("sv-SE")} st` : "–";
+  const holdingAsset = holding ? registry?.[holding.asset] : null;
+  $("holdingAsset").textContent = holding ? holdingAsset?.display_name || holding.asset : "Ingen investerad tillgång";
+  $("holdingInstrument").textContent = holding ? holdingAsset?.instrument_name || holding.instrument : "Kassa";
+  $("holdingQuantity").textContent = holding
+    ? `${holding.instrument} · ${holding.quantity.toLocaleString("sv-SE")} st`
+    : "–";
   $("startValue").textContent = formatSek(result.startCapitalSek);
   $("currentValue").textContent = formatSek(result.currentValueSek);
   setReturn($("totalReturn"), result.totalReturnPct);
@@ -186,7 +191,7 @@ function fillAssetSelect(selectedAsset) {
   Object.entries(registry).forEach(([assetId, asset]) => {
     const option = document.createElement("option");
     option.value = assetId;
-    option.textContent = asset.display_name;
+    option.textContent = `${asset.display_name} — ${asset.instrument_name}`;
     option.selected = assetId === selectedAsset;
     select.append(option);
   });
@@ -196,7 +201,12 @@ function fillAssetSelect(selectedAsset) {
 function syncInstrumentFromAsset() {
   const asset = registry[$("assetSelect").value];
   if (!asset) return;
-  $("instrumentInput").value = asset.default_instrument;
+  const instrument = $("instrumentInput");
+  instrument.replaceChildren();
+  const option = document.createElement("option");
+  option.value = asset.default_instrument;
+  option.textContent = `${asset.instrument_name} (${asset.default_instrument})`;
+  instrument.append(option);
   $("currencySelect").value = asset.currency;
   $("portfolioForm").elements.fx_rate_to_sek.value = asset.currency === "SEK" ? "1" : "";
 }

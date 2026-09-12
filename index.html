@@ -8,7 +8,7 @@
   <title>App3 Tester</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./assets/icons/app3.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./src/styles.css?v=1.0.0">
+  <link rel="stylesheet" href="./src/styles.css?v=1.0.1">
 </head>
 <body>
   <a class="skip-link" href="#main">Hoppa till innehåll</a>
@@ -43,6 +43,11 @@
         </div>
         <p class="signal-action" id="signalAction">HOLD</p>
         <p class="signal-message" id="signalMessage"></p>
+        <div class="signal-instrument" aria-label="ETF att äga enligt signalen">
+          <span>ETF ATT ÄGA</span>
+          <strong id="signalInstrumentName">–</strong>
+          <small id="signalInstrumentTicker">–</small>
+        </div>
         <dl class="signal-dates">
           <div><dt>Beslut</dt><dd id="signalDate">–</dd></div>
           <div><dt>Gäller från</dt><dd id="effectiveDate">–</dd></div>
@@ -119,7 +124,7 @@
           <button class="danger-button" id="resetButton" type="button">Radera mitt lokala test</button>
         </div>
         <dl class="settings-meta">
-          <div><dt>Appversion</dt><dd>1.0.0</dd></div>
+          <div><dt>Appversion</dt><dd>1.0.1</dd></div>
           <div><dt>Lagring</dt><dd>Den här webbläsaren</dd></div>
         </dl>
       </section>
@@ -136,8 +141,8 @@
       <div class="dialog-heading"><div><p class="eyebrow">LOKALT PÅ ENHETEN</p><h2 id="dialogTitle">Starta mitt test</h2></div><button class="icon-button" id="closePortfolioDialog" type="button" aria-label="Stäng">×</button></div>
       <p id="dialogIntro">Registrera ditt första köp. Uppgifterna lämnar aldrig webbläsaren.</p>
       <label>Transaktion<select name="type"><option value="BUY">Köp</option><option value="SELL">Sälj</option></select></label>
-      <label>Tillgång<select name="asset" id="assetSelect"></select></label>
-      <label>Instrument<input name="instrument" id="instrumentInput" required autocomplete="off"></label>
+      <label>Marknad<select name="asset" id="assetSelect"></select></label>
+      <label>ETF/instrument<select name="instrument" id="instrumentInput" required></select></label>
       <div class="form-row"><label>Antal<input name="quantity" type="number" min="0.0001" step="0.0001" required inputmode="decimal"></label><label>Inköpskurs<input name="price" type="number" min="0.0001" step="0.0001" required inputmode="decimal"></label></div>
       <div class="form-row"><label>Valuta<select name="currency" id="currencySelect"><option>SEK</option><option>EUR</option><option>USD</option></select></label><label id="fxLabel">Kurs till SEK<input name="fx_rate_to_sek" type="number" min="0.0001" step="0.0001" value="1" inputmode="decimal"></label></div>
       <div class="form-row"><label>Datum<input name="date" type="date" required></label><label>Courtage i SEK<input name="fee_sek" type="number" min="0" step="0.01" value="0" inputmode="decimal"></label></div>
@@ -159,6 +164,6 @@
     </form>
   </dialog>
 
-  <script type="module" src="./src/app.js?v=1.0.0"></script>
+  <script type="module" src="./src/app.js?v=1.0.1"></script>
 </body>
 </html>

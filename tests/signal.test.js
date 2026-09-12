@@ -20,6 +20,8 @@ test("rendering is strategy agnostic", () => {
 test("NASDAQ HOLD renders an explicit recommendation", () => {
   const view = signalViewModel(signal, registry);
   assert.equal(view.assetName, "Nasdaq 100");
+  assert.equal(view.instrumentName, "Invesco EQQQ Nasdaq-100 UCITS ETF Dist");
+  assert.equal(view.instrumentTicker, "EQQQ");
   assert.equal(view.action, "HOLD");
   assert.match(view.message, /fortsatt Nasdaq 100/);
 });
@@ -29,6 +31,8 @@ test("OMX SWITCH renders source and destination", () => {
   switched.signal = { ...switched.signal, previous_asset: "NASDAQ", recommended_asset: "OMX", action: "SWITCH" };
   const view = signalViewModel(switched, registry);
   assert.equal(view.assetName, "Sverige / OMX");
+  assert.equal(view.instrumentName, "XACT OMXS30 ESG (UCITS ETF)");
+  assert.equal(view.instrumentTicker, "XACT OMXS30");
   assert.equal(view.transition, "Nasdaq 100 → Sverige / OMX");
 });
 

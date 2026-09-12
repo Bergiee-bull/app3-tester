@@ -70,6 +70,11 @@ serializes an internal decision, account object, or position file wholesale.
 `OMX` to public display and instrument information. UI code works with the
 signal's `recommended_asset` and resolves presentation through this registry.
 
+The current selectable instruments are explicit: **Invesco EQQQ Nasdaq-100
+UCITS ETF Dist** (`EQQQ`) for Nasdaq exposure and **XACT OMXS30 ESG (UCITS
+ETF)** (`XACT OMXS30`) for Swedish exposure. The market selector controls this
+fixed instrument choice; free-text instruments are not accepted in the V1 UI.
+
 Adding a future asset requires a registry entry. It must not be implemented as
 a strategy-specific condition in the UI.
 

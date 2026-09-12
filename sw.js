@@ -1,10 +1,10 @@
-const CACHE = "app3-tester-v1.0.0";
+const CACHE = "app3-tester-v1.0.1";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./manifest.json",
-  "./src/styles.css?v=1.0.0",
-  "./src/app.js?v=1.0.0",
+  "./src/styles.css?v=1.0.1",
+  "./src/app.js?v=1.0.1",
   "./src/signal.js",
   "./src/storage.js",
   "./src/portfolio.js",

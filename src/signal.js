@@ -93,6 +93,7 @@ export function signalViewModel(payload, registry) {
     assetId: payload.signal.recommended_asset,
     assetName: asset.display_name,
     instrumentName: asset.instrument_name,
+    instrumentTicker: asset.default_instrument,
     action: payload.signal.action,
     signalDate: payload.signal.signal_date,
     effectiveDate: payload.signal.effective_date,
