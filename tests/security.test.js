@@ -79,3 +79,10 @@ test("privacy statement matches local-only implementation", () => {
   assert.match(appSource, /window\.localStorage/);
   assert.doesNotMatch(appSource, /fetch\([^\n]*(portfolio|transaction)/i);
 });
+
+test("local reset uses an in-app confirmation without touching production", () => {
+  assert.match(index, /id="resetDialog"/);
+  assert.match(index, /Radera lokal data/);
+  assert.match(appSource, /confirmResetPortfolio/);
+  assert.doesNotMatch(appSource, /\bconfirm\(/);
+});

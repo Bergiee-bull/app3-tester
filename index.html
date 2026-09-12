@@ -8,7 +8,7 @@
   <title>App3 Tester</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./assets/icons/app3.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./src/styles.css?v=1.2.1">
+  <link rel="stylesheet" href="./src/styles.css?v=1.2.2">
 </head>
 <body>
   <a class="skip-link" href="#main">Hoppa till innehåll</a>
@@ -132,7 +132,7 @@
           <button class="danger-button" id="resetButton" type="button">Radera mitt lokala test</button>
         </div>
         <dl class="settings-meta">
-          <div><dt>Appversion</dt><dd>1.2.1</dd></div>
+          <div><dt>Appversion</dt><dd>1.2.2</dd></div>
           <div><dt>Lagring</dt><dd>Den här webbläsaren</dd></div>
         </dl>
       </section>
@@ -172,6 +172,18 @@
     </form>
   </dialog>
 
-  <script type="module" src="./src/app.js?v=1.2.1"></script>
+  <dialog id="resetDialog" aria-labelledby="resetTitle">
+    <div class="confirm-dialog">
+      <p class="eyebrow">ENDAST DEN HÄR ENHETEN</p>
+      <h2 id="resetTitle">Radera lokalt test?</h2>
+      <p>Alla lokala transaktioner, värderingar och signalhistorik tas bort. App3-produktion och den publika signalen påverkas inte.</p>
+      <div class="confirm-actions">
+        <button class="secondary-button" id="cancelResetButton" type="button">Behåll data</button>
+        <button class="danger-button" id="confirmResetButton" type="button">Radera lokal data</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script type="module" src="./src/app.js?v=1.2.2"></script>
 </body>
 </html>

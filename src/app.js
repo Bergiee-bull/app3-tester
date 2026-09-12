@@ -1,5 +1,5 @@
 import { loadAssetRegistry } from "./asset_registry.js";
-import { loadBenchmarkData } from "./benchmark_data.js?v=1.2.1";
+import { loadBenchmarkData } from "./benchmark_data.js?v=1.2.2";
 import { assessSignal, signalViewModel } from "./signal.js";
 import { createPortfolioStore } from "./storage.js";
 import {
@@ -11,8 +11,8 @@ import {
   recordSnapshot,
   rememberSignal,
   transactionValueSek,
-} from "./portfolio.js?v=1.2.1";
-import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js?v=1.2.1";
+} from "./portfolio.js?v=1.2.2";
+import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js?v=1.2.2";
 
 const $ = (id) => document.getElementById(id);
 const store = createPortfolioStore(window.localStorage);
@@ -355,8 +355,12 @@ async function importPortfolio(event) {
 }
 
 function resetPortfolio() {
-  if (!confirm("Radera alla lokala App3-transaktioner och värderingar på den här enheten?")) return;
+  $("resetDialog").showModal();
+}
+
+function confirmResetPortfolio() {
   portfolio = store.reset();
+  $("resetDialog").close();
   renderPortfolio();
   renderSignalHistory();
 }
@@ -402,8 +406,10 @@ $("closeValuationDialog").addEventListener("click", () => $("valuationDialog").c
 $("exportButton").addEventListener("click", exportPortfolio);
 $("importInput").addEventListener("change", importPortfolio);
 $("resetButton").addEventListener("click", resetPortfolio);
+$("cancelResetButton").addEventListener("click", () => $("resetDialog").close());
+$("confirmResetButton").addEventListener("click", confirmResetPortfolio);
 window.addEventListener("resize", renderChart);
 
 applyTheme(portfolio.settings.theme);
 loadPublicData();
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=1.2.1");
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=1.2.2");

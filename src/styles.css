@@ -139,6 +139,9 @@ input, select { width: 100%; border: 1px solid var(--line); border-radius: var(-
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .full-button { width: 100%; margin-top: 22px; }
 .form-error { color: var(--danger); font-weight: 700; }
+.confirm-dialog { padding: 26px; }
+.confirm-dialog > p:not(.eyebrow) { color: var(--text-muted); }
+.confirm-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
 [hidden] { display: none !important; }
 
 @media (max-width: 760px) {
@@ -163,6 +166,7 @@ input, select { width: 100%; border: 1px solid var(--line); border-radius: var(-
   .form-row { grid-template-columns: 1fr; gap: 0; }
   .settings-actions { display: grid; }
   .settings-actions > * { width: 100%; justify-content: center; }
+  .confirm-actions { display: grid; }
   .history-row { grid-template-columns: 88px minmax(0, 1fr); gap: 5px 10px; }
   .history-row small { grid-column: 2; overflow-wrap: anywhere; }
   .chart-metrics { grid-template-columns: 1fr; }
