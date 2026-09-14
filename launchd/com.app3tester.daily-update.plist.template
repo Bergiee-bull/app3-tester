@@ -26,8 +26,8 @@
     <integer>15</integer>
   </dict>
   <key>StandardOutPath</key>
-  <string>__REPO_PATH__/data/logs/app3_tester_daily.out.log</string>
+  <string>__LOG_DIR__/app3_tester_daily.out.log</string>
   <key>StandardErrorPath</key>
-  <string>__REPO_PATH__/data/logs/app3_tester_daily.err.log</string>
+  <string>__LOG_DIR__/app3_tester_daily.err.log</string>
 </dict>
 </plist>

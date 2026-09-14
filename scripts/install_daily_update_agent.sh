@@ -6,6 +6,7 @@ PRODUCTION_ROOT="${APP3_PRODUCTION_ROOT:-}"
 LABEL="com.app3tester.daily-update"
 TARGET="$HOME/Library/LaunchAgents/$LABEL.plist"
 TEMPLATE="$REPO_ROOT/launchd/$LABEL.plist.template"
+LOG_DIR="$HOME/Library/Logs/app3-tester"
 
 if [[ -z "$PRODUCTION_ROOT" ]]; then
   echo "Ange den privata App3-roten i APP3_PRODUCTION_ROOT." >&2
@@ -17,12 +18,14 @@ if [[ ! -f "$PRODUCTION_ROOT/scripts/app3_export_public_signal.py" ]]; then
   exit 2
 fi
 
-mkdir -p "$HOME/Library/LaunchAgents" "$REPO_ROOT/data/logs"
+mkdir -p "$HOME/Library/LaunchAgents" "$LOG_DIR"
 escape_sed() { printf '%s' "$1" | sed 's/[&|]/\\&/g'; }
 REPO_ESCAPED="$(escape_sed "$REPO_ROOT")"
 PRODUCTION_ESCAPED="$(escape_sed "$PRODUCTION_ROOT")"
+LOG_ESCAPED="$(escape_sed "$LOG_DIR")"
 sed -e "s|__REPO_PATH__|$REPO_ESCAPED|g" \
   -e "s|__PRODUCTION_ROOT__|$PRODUCTION_ESCAPED|g" \
+  -e "s|__LOG_DIR__|$LOG_ESCAPED|g" \
   "$TEMPLATE" > "$TARGET"
 
 DOMAIN="gui/$(id -u)"
@@ -33,4 +36,4 @@ launchctl enable "$DOMAIN/$LABEL"
 echo "Installerad: $TARGET"
 echo "Schema: dagligen 07:15 Europe/Stockholm"
 echo "Status: launchctl print $DOMAIN/$LABEL"
-echo "Loggar: $REPO_ROOT/data/logs/app3_tester_daily.out.log"
+echo "Loggar: $LOG_DIR/app3_tester_daily.out.log"
