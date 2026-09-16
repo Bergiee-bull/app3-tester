@@ -57,9 +57,9 @@ test("UI exposes App3 and two buy-and-hold comparison series", () => {
   assert.match(appSource, /loadBenchmarkData/);
 });
 
-test("daily updater is scheduled for 07:15 Europe/Stockholm", () => {
-  assert.match(launchd, /<key>Hour<\/key>\s*<integer>7<\/integer>/);
-  assert.match(launchd, /<key>Minute<\/key>\s*<integer>15<\/integer>/);
+test("daily updater is scheduled for 09:15 and 22:00 Europe/Stockholm", () => {
+  assert.match(launchd, /<key>Hour<\/key>\s*<integer>9<\/integer>[\s\S]*?<key>Minute<\/key>\s*<integer>15<\/integer>/);
+  assert.match(launchd, /<key>Hour<\/key>\s*<integer>22<\/integer>[\s\S]*?<key>Minute<\/key>\s*<integer>0<\/integer>/);
   assert.match(launchd, /Europe\/Stockholm/);
   assert.match(publisher, /app3_export_public_signal\.py/);
   assert.match(publisher, /export_public_benchmarks\.py/);
@@ -68,7 +68,7 @@ test("daily updater is scheduled for 07:15 Europe/Stockholm", () => {
 });
 
 test("automatic market valuation is displayed with EUR/SEK provenance", () => {
-  assert.match(index, /Dagligen 07:15/);
+  assert.match(index, /Dagligen 09:15 och 22:00/);
   assert.match(index, /valuationSource/);
   assert.match(appSource, /EUR\/SEK/);
   assert.match(appSource, /applyAutomaticValuations/);

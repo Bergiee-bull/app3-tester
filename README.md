@@ -146,9 +146,9 @@ python3 scripts/export_public_benchmarks.py
 This optional maintenance command requires `pandas` and `yfinance`. Market data
 never calculates an App3 signal in this public app.
 
-## Daily 07:15 Update
+## Daily 09:15 and 22:00 Updates
 
-The local Mac publisher runs every day at **07:15 Europe/Stockholm**. It uses a
+The local Mac publisher runs every day at **09:15 and 22:00 Europe/Stockholm**. It uses a
 fail-closed chain:
 
 1. Export the sanitized App3 signal from the private production workspace.

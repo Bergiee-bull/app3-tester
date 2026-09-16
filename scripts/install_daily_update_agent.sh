@@ -34,6 +34,6 @@ launchctl bootstrap "$DOMAIN" "$TARGET"
 launchctl enable "$DOMAIN/$LABEL"
 
 echo "Installerad: $TARGET"
-echo "Schema: dagligen 07:15 Europe/Stockholm"
+echo "Schema: dagligen 09:15 och 22:00 Europe/Stockholm"
 echo "Status: launchctl print $DOMAIN/$LABEL"
 echo "Loggar: $LOG_DIR/app3_tester_daily.out.log"
