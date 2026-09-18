@@ -79,6 +79,59 @@ test("App3 chart segments retain the held asset and switch markers", () => {
   const result = buildPerformanceComparison(portfolio, {
     observations: [["2026-01-02", 100, 100], ["2026-03-02", 110, 105]],
   });
-  assert.deepEqual(result.app3.map((row) => row.asset), ["NASDAQ", "OMX", "OMX"]);
+  assert.deepEqual(result.app3.map((row) => row.asset), ["NASDAQ", "OMX"]);
   assert.deepEqual(result.switchDates, ["2026-02-02"]);
+});
+
+test("App3 and benchmarks share the same dates and App3 starts at zero", () => {
+  const portfolio = {
+    started_at: "2026-01-02",
+    start_capital_sek: 1000,
+    transactions: [
+      { type: "BUY", asset: "NASDAQ", instrument: "EQQQ", date: "2026-01-02", quantity: 1 },
+    ],
+    snapshots: [
+      { date: "2026-01-02", value_sek: 1025 },
+      { date: "2026-01-05", value_sek: 1127.5 },
+      { date: "2026-01-06", value_sek: 1200 },
+    ],
+  };
+  const result = buildPerformanceComparison(portfolio, {
+    observations: [
+      ["2026-01-02", 100, 200],
+      ["2026-01-05", 110, 190],
+      ["2026-01-06", 120, 220],
+    ],
+  });
+  assert.deepEqual(result.app3.map((row) => row.date), ["2026-01-02", "2026-01-05", "2026-01-06"]);
+  assert.deepEqual(result.nasdaq.map((row) => row.date), result.app3.map((row) => row.date));
+  assert.deepEqual(result.omx.map((row) => row.date), result.app3.map((row) => row.date));
+  assert.equal(result.app3[0].return_pct, 0);
+  assert.equal(result.nasdaq[0].return_pct, 0);
+  assert.equal(result.omx[0].return_pct, 0);
+});
+
+test("App3 is not plotted beyond the latest common benchmark date", () => {
+  const portfolio = {
+    started_at: "2026-01-02",
+    start_capital_sek: 1000,
+    transactions: [
+      { type: "BUY", asset: "NASDAQ", instrument: "EQQQ", date: "2026-01-02", quantity: 1 },
+    ],
+    snapshots: [
+      { date: "2026-01-02", value_sek: 1000 },
+      { date: "2026-01-05", value_sek: 1100 },
+      { date: "2026-01-06", value_sek: 1200 },
+    ],
+  };
+  const result = buildPerformanceComparison(portfolio, {
+    observations: [
+      ["2026-01-02", 100, 200],
+      ["2026-01-05", 110, 190],
+    ],
+  });
+  assert.deepEqual(result.app3.map((row) => row.date), ["2026-01-02", "2026-01-05"]);
+  assert.deepEqual(result.nasdaq.map((row) => row.date), ["2026-01-02", "2026-01-05"]);
+  assert.equal(result.latest.app3, result.app3.at(-1).return_pct);
+  assert.equal(result.latest.nasdaq, result.nasdaq.at(-1).return_pct);
 });

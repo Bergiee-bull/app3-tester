@@ -57,19 +57,30 @@ export function buildPerformanceComparison(portfolio, benchmarkData) {
     return { ...empty, app3: app3Only, latest: { ...empty.latest, app3: app3Only.at(-1)?.return_pct ?? null } };
   }
 
-  const comparisonStartDate = sourceRows[0][0];
-  const nasdaqBase = sourceRows[0][1];
-  const omxBase = sourceRows[0][2];
-  const nasdaq = sourceRows.map((row) => ({ date: row[0], return_pct: (row[1] / nasdaqBase - 1) * 100 }));
-  const omx = sourceRows.map((row) => ({ date: row[0], return_pct: (row[2] / omxBase - 1) * 100 }));
-  const app3 = (portfolio.snapshots || [])
-    .filter((row) => validSnapshot(row) && row.date >= comparisonStartDate)
+  const app3Snapshots = (portfolio.snapshots || [])
+    .filter((row) => validSnapshot(row) && row.date >= requestedStartDate)
     .sort((a, b) => a.date.localeCompare(b.date))
-    .map((row) => ({
+  const app3Dates = new Set(app3Snapshots.map((row) => row.date));
+  const commonRows = sourceRows.filter((row) => app3Dates.has(row[0]));
+  const comparisonRows = commonRows.length ? commonRows : sourceRows;
+  const comparisonStartDate = comparisonRows[0][0];
+  const comparisonEndDate = comparisonRows.at(-1)[0];
+  const nasdaqBase = comparisonRows[0][1];
+  const omxBase = comparisonRows[0][2];
+  const nasdaq = comparisonRows.map((row) => ({ date: row[0], return_pct: (row[1] / nasdaqBase - 1) * 100 }));
+  const omx = comparisonRows.map((row) => ({ date: row[0], return_pct: (row[2] / omxBase - 1) * 100 }));
+  const alignedSnapshots = app3Snapshots.filter((row) => (
+    row.date >= comparisonStartDate && row.date <= comparisonEndDate
+      && comparisonRows.some((sourceRow) => sourceRow[0] === row.date)
+  ));
+  const app3Base = alignedSnapshots[0]?.value_sek;
+  const app3 = Number.isFinite(app3Base) && app3Base > 0
+    ? alignedSnapshots.map((row) => ({
       date: row.date,
-      return_pct: (row.value_sek / startCapital - 1) * 100,
+      return_pct: (row.value_sek / app3Base - 1) * 100,
       asset: assetAtDate(portfolio.transactions, row.date),
-    }));
+    }))
+    : [];
 
   return {
     requestedStartDate,
@@ -77,7 +88,8 @@ export function buildPerformanceComparison(portfolio, benchmarkData) {
     app3,
     nasdaq,
     omx,
-    switchDates: switchDates(portfolio.transactions, comparisonStartDate),
+    switchDates: switchDates(portfolio.transactions, comparisonStartDate)
+      .filter((date) => date <= comparisonEndDate),
     latest: {
       app3: app3.at(-1)?.return_pct ?? null,
       nasdaq: nasdaq.at(-1)?.return_pct ?? null,

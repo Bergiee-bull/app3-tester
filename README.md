@@ -123,8 +123,10 @@ distributions must be recorded locally before they are reflected in the actual
 portfolio value. Benchmark curves use provider-reported Adjusted Close.
 
 The chart compares the user's local App3 valuation snapshots with two public
-buy-and-hold benchmarks. All three series start at 0% on the first common
-completed trading date on or after the user's locally stored first purchase:
+buy-and-hold benchmarks. The chart uses only dates shared by the local App3
+snapshots and the validated benchmark series, so no curve can extend beyond
+the latest common completed trading date. All three series start at 0% on the
+first shared date on or after the user's locally stored first purchase:
 
 - App3 is green while the recorded holding is Nasdaq and red while it is OMX.
 - Nasdaq buy-and-hold uses `EQQQ.DE` Adjusted Close converted to SEK with

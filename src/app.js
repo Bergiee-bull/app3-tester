@@ -211,7 +211,7 @@ function renderChart() {
       ? ` Första gemensamma handelsdag efter ditt köp är ${startText}.`
       : "";
     const latestText = formatDate(benchmarkData.latest_common_trading_date);
-    $("chartNote").textContent = `Alla kurvor är normaliserade till 0 % från ditt App3-köp.${shifted} EQQQ och XACT OMXS30 ESG använder Adjusted Close i SEK. Benchmarkdata t.o.m. ${latestText}.`;
+    $("chartNote").textContent = `Alla kurvor är normaliserade till 0 % från den första gemensamma handelsdagen efter ditt App3-köp.${shifted} EQQQ och XACT OMXS30 ESG använder Adjusted Close i SEK. Benchmarkdata t.o.m. ${latestText}.`;
   }
 }
 
