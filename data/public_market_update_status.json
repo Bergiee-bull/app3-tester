@@ -2,7 +2,7 @@
   "schema_version": 1,
   "source": "public_market_update",
   "status": "fresh",
-  "attempted_at": "2026-09-22T21:31:48+02:00",
+  "attempted_at": "2026-09-22T21:42:20+02:00",
   "latest_verified_market_date": "2026-09-22",
   "candidate_market_date": "2026-09-22",
   "latest_source_dates": {
