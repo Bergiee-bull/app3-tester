@@ -23,6 +23,7 @@ TARGET_FILE="$REPO_ROOT/data/benchmark_series.json"
 TEMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TEMP_DIR"' EXIT
 CANDIDATE_FILE="$TEMP_DIR/benchmark_series.json"
+REPO_WAS_CLEAN=false
 
 write_status() {
   local -a args=(
@@ -53,6 +54,7 @@ run_update() {
   if ! $DRY_RUN; then
     [[ "$($GIT_BIN branch --show-current)" == "main" ]] || { echo "Public market update kräver branch main." >&2; return 1; }
     [[ -z "$($GIT_BIN status --porcelain)" ]] || { echo "Public market update stoppad: repot har lokala ändringar." >&2; return 1; }
+    REPO_WAS_CLEAN=true
     "$GIT_BIN" pull --ff-only origin main
   fi
 
@@ -86,7 +88,7 @@ if run_update; then
 fi
 
 failure_message="Public market update misslyckades. Tidigare verifierad benchmarkdata behålls."
-if ! $DRY_RUN; then
+if ! $DRY_RUN && $REPO_WAS_CLEAN; then
   cd "$REPO_ROOT"
   write_status "$TARGET_FILE" stale "$failure_message" || true
   "$NPM_BIN" test || true
