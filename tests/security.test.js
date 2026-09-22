@@ -10,6 +10,7 @@ const historyText = fs.readFileSync(new URL("data/app3_strategy_history.json", r
 const signal = JSON.parse(signalText);
 const history = JSON.parse(historyText);
 const appSource = fs.readFileSync(new URL("src/app.js", root), "utf8");
+const reconciliationSource = fs.readFileSync(new URL("src/reconciliation.js", root), "utf8");
 const index = fs.readFileSync(new URL("index.html", root), "utf8");
 const css = fs.readFileSync(new URL("src/styles.css", root), "utf8");
 const publisher = fs.readFileSync(new URL("scripts/update_and_publish_daily.sh", root), "utf8");
@@ -48,6 +49,14 @@ test("frontend contains no strategy engine or production mutation path", () => {
     assert.equal(lower.includes(term), false, term);
   });
   assert.equal(/p13h_077/.test(appSource), false);
+});
+
+test("reconciliation stays local and does not publish private portfolio data", () => {
+  assert.doesNotMatch(reconciliationSource, /fetch\(|XMLHttpRequest|navigator\.sendBeacon/);
+  assert.doesNotMatch(reconciliationSource, /decision_v1\.json|current_position|Telegram|place_order/i);
+  assert.match(index, /Min App3-portfölj brutto/);
+  assert.match(appSource, /buildComparisonReconciliation/);
+  assert.match(appSource, /assertComparisonReconciles/);
 });
 
 test("PWA and responsive accessibility hooks exist", () => {

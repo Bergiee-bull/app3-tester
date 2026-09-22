@@ -126,14 +126,15 @@ The performance chart is a **theoretical App3 strategy equity curve**, not the
 user's local account valuation. It chains daily returns from the same canonical
 public benchmark series used by the two buy-and-hold curves. The public
 position history is stored in `data/app3_strategy_history.json` and contains
-only sanitized production strategy events. Personal transactions, purchase
-price, quantity, fees, FX input, and local snapshots cannot change this chart;
-the personal result remains in **Min portfölj**.
+only sanitized production strategy events. Local snapshots, quantity, fees,
+and account values cannot change the strategy curve. The first local EQQQ BUY
+price and FX are intentionally used only as the economic execution anchor; the
+personal result remains in **Min portfölj**.
 
 The chart uses only dates shared by the validated benchmark series, so no curve
 can extend beyond the latest common completed trading date. All three series
-start at 0% on the first common trading date on or after the user's locally
-stored start date:
+start at 0% on the user's first local App3 BUY date, then bridge to the first
+available market observation when necessary:
 
 - App3 strategy is green while the public strategy holds Nasdaq and red while it holds OMX.
 - Nasdaq buy-and-hold uses `EQQQ.DE` Adjusted Close converted to SEK with
@@ -156,6 +157,28 @@ python3 scripts/export_public_benchmarks.py
 
 This optional maintenance command requires `pandas` and `yfinance`. Market data
 never calculates an App3 signal in this public app.
+
+### Local reconciliation
+
+The browser-local reconciliation uses the first local `BUY` transaction as
+`user_app3_start` and uses the benchmark's `latest_common_trading_date` as the
+single comparison end. The chart keeps an anchor row at the purchase date. If
+the first common market observation is later, the first bridge is:
+
+```text
+first_market_adjusted_value /
+(purchase_price × purchase_fx_rate_to_sek)
+```
+
+After that bridge, daily factors are chained from the canonical Adjusted Close
+series without rebasing at strategy switches. EQQQ B&H and an all-NASDAQ App3
+strategy therefore share the same execution anchor and match day by day. XACT
+B&H is a hypothetical SEK alternative normalized at the same start date.
+
+The personal portfolio card remains the actual local/net result. The comparison
+section additionally shows the personal gross result on the common end date and
+reports the valuation date, fees, FX convention, dividend treatment, and any
+unexplained residual. Personal data is never exported to GitHub.
 
 ## Daily 09:15 and 22:00 Updates
 

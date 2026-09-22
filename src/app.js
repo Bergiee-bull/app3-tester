@@ -1,6 +1,6 @@
 import { loadAssetRegistry } from "./asset_registry.js";
-import { loadBenchmarkData } from "./benchmark_data.js?v=1.2.4";
-import { loadStrategyHistory } from "./strategy_history.js?v=1.2.4";
+import { loadBenchmarkData } from "./benchmark_data.js?v=1.2.5";
+import { loadStrategyHistory } from "./strategy_history.js?v=1.2.5";
 import { assessSignal, signalViewModel } from "./signal.js";
 import { createPortfolioStore } from "./storage.js";
 import {
@@ -12,8 +12,9 @@ import {
   recordSnapshot,
   rememberSignal,
   transactionValueSek,
-} from "./portfolio.js?v=1.2.4";
-import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js?v=1.2.4";
+} from "./portfolio.js?v=1.2.5";
+import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js?v=1.2.5";
+import { assertComparisonReconciles, buildComparisonReconciliation } from "./reconciliation.js";
 
 const $ = (id) => document.getElementById(id);
 const store = createPortfolioStore(window.localStorage);
@@ -24,6 +25,7 @@ let benchmarkData = null;
 let strategyHistory = null;
 let benchmarkError = null;
 let strategyHistoryError = null;
+let reconciliationError = null;
 let signalAssessment = { verified: false };
 
 function formatDate(value) {
@@ -135,10 +137,14 @@ function renderPortfolio() {
     $("valuationSource").textContent = latestValuation.currency === "EUR"
       ? `Auto ${formatDate(latestValuation.date)}: ${price} EUR × EUR/SEK ${fx}`
       : `Auto ${formatDate(latestValuation.date)}: ${price} SEK`;
+    $("portfolioAsOf").textContent = `Värderingsdag: ${formatDate(latestValuation.date)}`;
   } else {
     $("valuationSource").textContent = latestValuation
       ? `Manuell värdering ${formatDate(latestValuation.date)}`
       : "Ingen marknadskurs ännu";
+    $("portfolioAsOf").textContent = latestValuation
+      ? `Värderingsdag: ${formatDate(latestValuation.date)}`
+      : "Värderingsdag: saknas";
   }
   setReturn($("totalReturn"), result.totalReturnPct);
   setReturn($("ytdReturn"), result.ytdReturnPct);
@@ -200,25 +206,40 @@ function renderSignalHistory() {
 function renderChart() {
   if ($("performanceSection").hidden) return;
   const comparison = buildPerformanceComparison(portfolio, benchmarkData, strategyHistory);
+  const reconciliation = buildComparisonReconciliation(portfolio, benchmarkData, strategyHistory, comparison);
   drawPerformanceChart($("performanceChart"), comparison);
+  setReturn($("portfolioChartReturn"), reconciliation.personal.comparable_gross_return_pct);
   setReturn($("app3ChartReturn"), comparison.latest.strategy);
   setReturn($("nasdaqChartReturn"), comparison.latest.nasdaq);
   setReturn($("omxChartReturn"), comparison.latest.omx);
-  if (benchmarkError || strategyHistoryError || !comparison.strategyHistoryValid) {
+  reconciliationError = null;
+  if (reconciliation.valid) {
+    try {
+      assertComparisonReconciles(reconciliation);
+    } catch (error) {
+      reconciliationError = error.message;
+    }
+  }
+  if (benchmarkError || strategyHistoryError || reconciliationError || !comparison.strategyHistoryValid) {
     $("chartNote").textContent = "Strategijämförelsen kan inte verifieras just nu. Benchmarkdata eller publik strategihistorik saknas.";
   } else if (!comparison.comparisonStartDate) {
     $("chartNote").textContent = "Strategijämförelsen börjar när validerad marknadsdata finns för ditt startdatum.";
   } else {
-    const startText = formatDate(comparison.comparisonStartDate);
-    const shifted = comparison.comparisonStartDate !== comparison.requestedStartDate
-      ? ` Första gemensamma handelsdag efter ditt köp är ${startText}.`
+    const shifted = comparison.firstMarketObservation !== comparison.requestedStartDate
+      ? ` Första gemensamma marknadsobservation är ${formatDate(comparison.firstMarketObservation)}; execution-bryggan bevaras.`
       : "";
-    const latestText = formatDate(benchmarkData.latest_common_trading_date);
+    const latestText = formatDate(reconciliation.comparison_end);
+    const personalText = formatPercent(reconciliation.personal.comparable_gross_return_pct);
+    const feeText = formatPercent(reconciliation.breakdown.fees_pp);
+    const asOfWarning = reconciliation.portfolio_as_of_date && reconciliation.portfolio_as_of_date !== reconciliation.comparison_end
+      ? ` Din faktiska depå är värderad t.o.m. ${formatDate(reconciliation.portfolio_as_of_date)}; nettoresultatet jämförs därför inte direkt med grafens slutdag.`
+      : "";
     $("chartNote").textContent = "App3 strategi använder publik strategihistorik och samma Adjusted Close-serier som benchmarkerna."
       + shifted
-      + " Alla kurvor startar på 0 % från den första gemensamma handelsdagen. Benchmarkdata t.o.m. "
-      + latestText
-      + ". Din faktiska depå visas separat under Min portfölj.";
+      + ` Alla kurvor och bruttoportföljjämförelsen startar vid ${formatDate(reconciliation.comparison_start)} och slutar vid ${latestText}.`
+      + ` Min App3-portfölj brutto: ${personalText}. Avgiftseffekt: ${feeText}.`
+      + asOfWarning
+      + " Benchmarkdata använder Adjusted Close med rapporterade utdelningar; din faktiska nettoavkastning visas separat i Min portfölj.";
   }
 }
 
@@ -424,4 +445,4 @@ window.addEventListener("resize", renderChart);
 
 applyTheme(portfolio.settings.theme);
 loadPublicData();
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=1.2.4");
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=1.2.5");

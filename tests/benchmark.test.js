@@ -52,7 +52,7 @@ test("sample or malformed automatic valuations fail closed", () => {
   assert.equal(validateBenchmarkData(missingFx), false);
 });
 
-test("benchmarks start together from the first common date on or after the App3 purchase", () => {
+test("comparison keeps the actual App3 start and bridges to the first market observation", () => {
   const data = {
     observations: [
       ["2026-01-02", 100, 200],
@@ -72,11 +72,13 @@ test("benchmarks start together from the first common date on or after the App3 
     ],
   };
   const result = buildPerformanceComparison(portfolio, data, history([["2025-12-01", "NASDAQ"]]));
-  assert.equal(result.comparisonStartDate, "2026-01-05");
+  assert.equal(result.comparisonStartDate, "2026-01-03");
+  assert.equal(result.firstMarketObservation, "2026-01-05");
   assert.equal(result.nasdaq[0].return_pct, 0);
   assert.equal(result.omx[0].return_pct, 0);
-  assert.ok(Math.abs(result.nasdaq[1].return_pct - 10) < 1e-9);
-  assert.ok(Math.abs(result.omx[1].return_pct - 15.7894736842) < 1e-8);
+  assert.ok(Math.abs(result.nasdaq[1].return_pct) < 1e-12);
+  assert.ok(Math.abs(result.nasdaq[2].return_pct - 10) < 1e-9);
+  assert.ok(Math.abs(result.omx[2].return_pct - 15.7894736842) < 1e-8);
 });
 
 test("App3 chart segments retain the held asset and switch markers", () => {
