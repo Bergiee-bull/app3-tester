@@ -193,8 +193,9 @@ function endValueForSimplePortfolio(portfolio, rows, comparisonEnd) {
 
 function warningsFor(portfolio, benchmarkData, rows, comparable) {
   const warnings = [];
-  if (benchmarkData?.latest_common_trading_date !== rows.at(-1)?.[0]) {
-    warnings.push("Benchmarkens latest_common_trading_date matchar inte observationsseriens slut.");
+  const latestCommonDate = benchmarkData?.latest_common_market_date || benchmarkData?.latest_common_trading_date;
+  if (latestCommonDate !== rows.at(-1)?.[0]) {
+    warnings.push("Benchmarkens latest_common_market_date matchar inte observationsseriens slut.");
   }
   if (portfolio?.transactions?.some((transaction) => transaction.type === "DIVIDEND")) {
     warnings.push("Utdelning/cashflow finns lokalt och måste ha samma behandling som Adjusted Close för full reconciliation.");

@@ -4,6 +4,7 @@ import fs from "node:fs";
 import { validateBenchmarkData } from "../src/benchmark_data.js";
 import { buildPerformanceComparison } from "../src/charts.js";
 import { validateStrategyHistory } from "../src/strategy_history.js";
+import { validateMarketStatus } from "../src/market_status.js";
 
 const benchmarks = JSON.parse(fs.readFileSync(new URL("../data/benchmark_series.json", import.meta.url), "utf8"));
 
@@ -28,6 +29,8 @@ test("public benchmark data is validated and never sample data", () => {
   assert.equal(validateBenchmarkData(benchmarks), true);
   assert.equal(benchmarks.is_sample_data, false);
   assert.equal(benchmarks.data_quality, "PASS");
+  assert.equal(benchmarks.latest_common_market_date, benchmarks.latest_common_trading_date);
+  assert.equal(benchmarks.source_dates["EQQQ.DE_adjusted_close"], benchmarks.benchmarks.NASDAQ.last_date);
   assert.equal(benchmarks.benchmarks.NASDAQ.adjusted_close_available, true);
   assert.equal(benchmarks.benchmarks.OMX.adjusted_close_available, true);
   assert.equal(benchmarks.latest_valuations.NASDAQ.currency, "EUR");
@@ -40,6 +43,24 @@ test("sample benchmark data fails closed", () => {
   const sample = structuredClone(benchmarks);
   sample.is_sample_data = true;
   assert.equal(validateBenchmarkData(sample), false);
+});
+
+test("common market date cannot be fabricated by forward fill or mixed dates", () => {
+  const mixed = structuredClone(benchmarks);
+  mixed.latest_common_market_date = "2099-01-01";
+  mixed.latest_common_trading_date = "2099-01-01";
+  assert.equal(validateBenchmarkData(mixed), false);
+
+  const missingAlias = structuredClone(benchmarks);
+  delete missingAlias.latest_common_market_date;
+  assert.equal(validateBenchmarkData(missingAlias), false);
+});
+
+test("public market status is explicit and non-sample", () => {
+  const status = JSON.parse(fs.readFileSync(new URL("../data/public_market_update_status.json", import.meta.url), "utf8"));
+  assert.equal(validateMarketStatus(status), true);
+  assert.equal(status.is_sample_data, false);
+  assert.ok(status.latest_verified_market_date);
 });
 
 test("sample or malformed automatic valuations fail closed", () => {

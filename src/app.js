@@ -1,6 +1,7 @@
 import { loadAssetRegistry } from "./asset_registry.js";
-import { loadBenchmarkData } from "./benchmark_data.js?v=1.2.5";
-import { loadStrategyHistory } from "./strategy_history.js?v=1.2.5";
+import { loadBenchmarkData } from "./benchmark_data.js?v=1.3.0";
+import { loadStrategyHistory } from "./strategy_history.js?v=1.3.0";
+import { loadMarketStatus } from "./market_status.js?v=1.3.0";
 import { assessSignal, signalViewModel } from "./signal.js";
 import { createPortfolioStore } from "./storage.js";
 import {
@@ -12,12 +13,13 @@ import {
   recordSnapshot,
   rememberSignal,
   transactionValueSek,
-} from "./portfolio.js?v=1.2.5";
-import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js?v=1.2.5";
+} from "./portfolio.js?v=1.3.0";
+import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js?v=1.3.0";
 import { assertComparisonReconciles, buildComparisonReconciliation } from "./reconciliation.js";
 
 const $ = (id) => document.getElementById(id);
 const store = createPortfolioStore(window.localStorage);
+const APP_VERSION = "1.3.0";
 let portfolio = store.load();
 let publicSignal = null;
 let registry = null;
@@ -25,6 +27,8 @@ let benchmarkData = null;
 let strategyHistory = null;
 let benchmarkError = null;
 let strategyHistoryError = null;
+let marketStatus = null;
+let marketStatusError = null;
 let reconciliationError = null;
 let signalAssessment = { verified: false };
 
@@ -48,6 +52,44 @@ function setReturn(element, value) {
   element.textContent = formatPercent(value);
   element.classList.toggle("positive", Number.isFinite(value) && value > 0);
   element.classList.toggle("negative", Number.isFinite(value) && value < 0);
+}
+
+function renderMarketStatus() {
+  const date = marketStatus?.latest_verified_market_date || benchmarkData?.latest_common_market_date;
+  $("marketFreshnessDate").textContent = date ? formatDate(date) : "–";
+  const statusLabels = {
+    fresh: "Färsk och verifierad",
+    waiting_for_complete_market_day: "Väntar på komplett handelsdag",
+    stale: "Ej uppdaterad",
+  };
+  const status = marketStatus?.status;
+  const offline = !window.navigator.onLine;
+  $("marketFreshnessStatus").textContent = offline
+    ? "OFFLINE / senast verifierad"
+    : (statusLabels[status] || "Okänd status");
+  const warning = marketStatus?.status === "fresh"
+    ? "EQQQ jämförs i SEK. Därför kan resultatet avvika från kursutvecklingen som visas i EUR hos mäklaren."
+    : `Marknadsdata ej uppdaterad – senaste verifierade datum ${date ? formatDate(date) : "saknas"}.`;
+  $("marketFreshnessWarning").textContent = offline
+    ? `OFFLINE / SENAST VERIFIERAD ${date ? formatDate(date) : "saknas"}. ${warning}`
+    : (marketStatusError ? `${warning} ${marketStatusError}` : warning);
+  $("marketFreshnessWarning").classList.toggle("warning", offline || marketStatus?.status !== "fresh");
+}
+
+function checkAppVersion() {
+  const key = "app3-tester-last-app-version";
+  const previous = window.localStorage.getItem(key);
+  if ((previous && previous !== APP_VERSION)
+    || (!previous && window.localStorage.getItem("app3Tester.portfolio.v1"))) {
+    $("updateBanner").hidden = false;
+  }
+  if (!previous && !window.localStorage.getItem("app3Tester.portfolio.v1")) {
+    window.localStorage.setItem(key, APP_VERSION);
+  }
+  $("updateButton").addEventListener("click", () => {
+    window.localStorage.setItem(key, APP_VERSION);
+    window.location.reload();
+  });
 }
 
 function applyTheme(theme) {
@@ -239,7 +281,7 @@ function renderChart() {
       + ` Alla kurvor och bruttoportföljjämförelsen startar vid ${formatDate(reconciliation.comparison_start)} och slutar vid ${latestText}.`
       + ` Min App3-portfölj brutto: ${personalText}. Avgiftseffekt: ${feeText}.`
       + asOfWarning
-      + " Benchmarkdata använder Adjusted Close med rapporterade utdelningar; din faktiska nettoavkastning visas separat i Min portfölj.";
+      + " EQQQ jämförs i SEK som totalavkastning; därför kan resultatet avvika från kursutvecklingen i EUR hos mäklaren. Din faktiska nettoavkastning visas separat i Min portfölj.";
   }
 }
 
@@ -399,6 +441,10 @@ async function loadPublicData() {
       benchmarkError = error.message;
       return null;
     });
+    const marketStatusPromise = loadMarketStatus().catch((error) => {
+      marketStatusError = error.message;
+      return null;
+    });
     const strategyHistoryPromise = loadStrategyHistory().catch((error) => {
       strategyHistoryError = error.message;
       return null;
@@ -406,6 +452,8 @@ async function loadPublicData() {
     registry = await loadAssetRegistry();
     benchmarkData = await benchmarkPromise;
     strategyHistory = await strategyHistoryPromise;
+    marketStatus = await marketStatusPromise;
+    renderMarketStatus();
     if (benchmarkData && portfolio.started_at) {
       portfolio = store.save(applyAutomaticValuations(portfolio, benchmarkData));
     }
@@ -444,5 +492,7 @@ $("confirmResetButton").addEventListener("click", confirmResetPortfolio);
 window.addEventListener("resize", renderChart);
 
 applyTheme(portfolio.settings.theme);
+checkAppVersion();
+renderMarketStatus();
 loadPublicData();
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=1.2.5");
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=1.3.0");

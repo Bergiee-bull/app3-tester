@@ -8,10 +8,14 @@
   <title>App3 Tester</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./assets/icons/app3.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./src/styles.css?v=1.2.5">
+  <link rel="stylesheet" href="./src/styles.css?v=1.3.0">
 </head>
 <body>
   <a class="skip-link" href="#main">Hoppa till innehåll</a>
+  <aside class="update-banner" id="updateBanner" hidden role="status">
+    <span>Ny version av App3 Tester finns.</span>
+    <button class="secondary-button" id="updateButton" type="button">Uppdatera</button>
+  </aside>
   <header class="topbar">
     <div class="brand-mark" aria-hidden="true">A3</div>
     <div>
@@ -90,7 +94,7 @@
         </div>
         <div class="chart-legend" aria-label="Grafserier">
           <span><i class="legend-app3"></i>App3 strategi: grön Nasdaq / röd OMX</span>
-          <span><i class="legend-nasdaq"></i>EQQQ buy &amp; hold</span>
+          <span><i class="legend-nasdaq"></i>EQQQ buy &amp; hold – totalavkastning i SEK</span>
           <span><i class="legend-omx"></i>XACT OMX buy &amp; hold</span>
         </div>
         <div class="chart-metrics" aria-label="Utveckling sedan start">
@@ -108,8 +112,11 @@
         <dl>
           <div><dt>Datakvalitet</dt><dd id="dataQuality">–</dd></div>
           <div><dt>Strategiversion</dt><dd id="strategyVersion">–</dd></div>
-          <div><dt>Kursuppdatering</dt><dd>Dagligen 09:15 och 22:00</dd></div>
+          <div><dt>Senaste gemensamma marknadsdag</dt><dd id="marketFreshnessDate">–</dd></div>
+          <div><dt>Marknadsdata</dt><dd id="marketFreshnessStatus">Kontrollerar</dd></div>
+          <div><dt>Kursuppdatering</dt><dd>Efter stängning vardagar 22:15</dd></div>
         </dl>
+        <p class="status-note" id="marketFreshnessWarning"></p>
       </section>
 
       <section id="historySection" aria-labelledby="historyTitle">
@@ -133,7 +140,8 @@
           <button class="danger-button" id="resetButton" type="button">Radera mitt lokala test</button>
         </div>
         <dl class="settings-meta">
-          <div><dt>Appversion</dt><dd>1.2.5</dd></div>
+          <div><dt>Appversion</dt><dd>1.3.0</dd></div>
+          <div><dt>Build</dt><dd>public-market-update</dd></div>
           <div><dt>Lagring</dt><dd>Den här webbläsaren</dd></div>
         </dl>
       </section>
@@ -185,6 +193,6 @@
     </div>
   </dialog>
 
-  <script type="module" src="./src/app.js?v=1.2.5"></script>
+  <script type="module" src="./src/app.js?v=1.3.0"></script>
 </body>
 </html>

@@ -43,6 +43,7 @@ if $DRY_RUN; then
   trap 'rm -rf "$TEMP_DIR"' EXIT
   SIGNAL_OUTPUT="$TEMP_DIR/app3_signal.json"
   BENCHMARK_OUTPUT="$TEMP_DIR/benchmark_series.json"
+  BENCHMARK_CANDIDATE="$BENCHMARK_OUTPUT"
   HISTORY_OUTPUT="$TEMP_DIR/app3_strategy_history.json"
 else
   if [[ "$($GIT_BIN branch --show-current)" != "main" ]]; then
@@ -56,6 +57,8 @@ else
   "$GIT_BIN" pull --ff-only origin main
   SIGNAL_OUTPUT="$REPO_ROOT/data/app3_signal.json"
   BENCHMARK_OUTPUT="$REPO_ROOT/data/benchmark_series.json"
+  BENCHMARK_CANDIDATE="$(mktemp)"
+  trap 'rm -f "$BENCHMARK_CANDIDATE"' EXIT
   HISTORY_OUTPUT="$REPO_ROOT/data/app3_strategy_history.json"
 fi
 
@@ -63,12 +66,24 @@ fi
   --input "$DECISION_FILE" \
   --output "$SIGNAL_OUTPUT"
 "$PYTHON_BIN" "$REPO_ROOT/scripts/export_public_benchmarks.py" \
-  --output "$BENCHMARK_OUTPUT"
+  --output "$BENCHMARK_CANDIDATE"
 "$PYTHON_BIN" "$HISTORY_EXPORTER" \
   --feedback "$FEEDBACK_FILE" \
   --decision "$DECISION_FILE" \
   --market-series "$MARKET_SERIES" \
   --output "$HISTORY_OUTPUT"
+"$NODE_BIN" "$REPO_ROOT/scripts/validate-data.mjs" "$SIGNAL_OUTPUT" "$BENCHMARK_CANDIDATE" "$HISTORY_OUTPUT"
+
+if ! $DRY_RUN; then
+  "$PYTHON_BIN" "$REPO_ROOT/scripts/promote_public_benchmark.py" \
+    --candidate "$BENCHMARK_CANDIDATE" \
+    --target "$BENCHMARK_OUTPUT"
+fi
+
+if $DRY_RUN; then
+  BENCHMARK_OUTPUT="$BENCHMARK_CANDIDATE"
+fi
+
 "$NODE_BIN" "$REPO_ROOT/scripts/validate-data.mjs" "$SIGNAL_OUTPUT" "$BENCHMARK_OUTPUT" "$HISTORY_OUTPUT"
 
 if $DRY_RUN; then

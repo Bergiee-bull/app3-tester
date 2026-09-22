@@ -141,6 +141,10 @@ available market observation when necessary:
   `EURSEK=X`.
 - OMX buy-and-hold uses `XACT-OMXS30.ST` Adjusted Close in SEK.
 
+The displayed EQQQ benchmark is **EQQQ buy & hold – totalavkastning i SEK**.
+EQQQ jämförs i SEK. Därför kan resultatet avvika från kursutvecklingen som visas
+i EUR hos mäklaren.
+
 The strategy curve follows the previous asset until the effective date of a
 public switch and then chains the new asset's daily return without rebasing.
 The two benchmark lines use separate grey shades. Thin vertical markers show
@@ -161,7 +165,7 @@ never calculates an App3 signal in this public app.
 ### Local reconciliation
 
 The browser-local reconciliation uses the first local `BUY` transaction as
-`user_app3_start` and uses the benchmark's `latest_common_trading_date` as the
+`user_app3_start` and uses the benchmark's `latest_common_market_date` as the
 single comparison end. The chart keeps an anchor row at the purchase date. If
 the first common market observation is later, the first bridge is:
 
@@ -180,13 +184,24 @@ section additionally shows the personal gross result on the common end date and
 reports the valuation date, fees, FX convention, dividend treatment, and any
 unexplained residual. Personal data is never exported to GitHub.
 
-## Daily 09:15 and 22:00 Updates
+## Daily Updates
 
-The local Mac publisher runs every day at **09:15 and 22:00 Europe/Stockholm**. It uses a
-fail-closed chain:
+The existing `com.app3tester.daily-update` flow remains the App3 signal/public
+signal flow and runs every day at **09:15 and 22:00 Europe/Stockholm**.
+
+The public benchmark refresh is a separate read-only LaunchAgent:
+
+- label: `com.app3tester.public-market-update`
+- time: **22:15 Europe/Stockholm, weekdays**
+- inputs: EQQQ.DE Adjusted Close, XACT-OMXS30.ST Adjusted Close, and EURSEK=X
+- output: only public benchmark and market-status files
+- it never runs the strategy engine or changes production state, Telegram,
+  `decision_v1.json`, `current_position`, or orders.
+
+The existing signal publisher uses a fail-closed chain:
 
 1. Export the sanitized App3 signal from the private production workspace.
-2. Fetch EQQQ, XACT OMXS30, and EUR/SEK through `yfinance`.
+2. Fetch the configured public market data through `yfinance`.
 3. Export and validate the public signal, benchmark data, and sanitized
    strategy history; reject sample data.
 4. Run all tests.
@@ -221,6 +236,28 @@ must be running with network access and valid Git credentials. A failed signal
 export, provenance check, price/FX fetch, test, or push stops the chain; stale or
 invalid data is never published as a successful update.
 
+The separate market refresh has a monotonicity guard: a fetched common date that
+is older than the currently published date is rejected. This prevents an early
+09:15 run, before EQQQ.DE is complete, from replacing a newer verified evening
+dataset. On failure the previous benchmark remains intact and a privacy-safe
+status is published so the UI can show `Marknadsdata ej uppdaterad – senaste
+verifierade datum ...`.
+
+Test and install the separate public market agent:
+
+```bash
+bash scripts/update_public_market_data.sh --dry-run
+bash scripts/install_public_market_update_agent.sh
+launchctl print gui/$(id -u)/com.app3tester.public-market-update
+tail -f "$HOME/Library/Logs/app3-tester/app3_tester_public_market.out.log"
+tail -f "$HOME/Library/Logs/app3-tester/app3_tester_public_market.err.log"
+bash scripts/uninstall_public_market_update_agent.sh
+```
+
+The public status is stored in `data/public_market_update_status.json`. A fresh
+common date requires all canonical series to exist on that date; no forward-fill
+or mixed-date headline is allowed.
+
 ## Local Development
 
 Requires Python 3 for the static server and Node.js 22 or newer for tests.
@@ -235,9 +272,14 @@ Open `http://127.0.0.1:4173`.
 ## PWA
 
 The manifest, icon, and service worker provide an installable standalone app.
-The app shell is cached, while `app3_signal.json` is always requested from the
-network without a service-worker cache fallback. This avoids presenting a
-cached production recommendation as current.
+The app shell is cached. Public signal, strategy history, benchmark, and market
+status files use network-first loading; offline, the last cached copy is used and
+the UI marks the data as last verified. Data-only updates do not require a
+reinstall and do not touch localStorage.
+
+Frontend version `1.3.0` is shown under Settings/Om. A real frontend version
+change uses a new service-worker cache and a one-time update banner. Clicking
+Uppdatera reloads once; the local portfolio remains untouched.
 
 ## GitHub Pages
 

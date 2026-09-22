@@ -88,7 +88,13 @@ def build_payload() -> dict:
         "currency": "SEK",
         "return_basis": "adjusted_close_with_provider_reported_distributions",
         "alignment": "common_completed_trading_dates",
+        "latest_common_market_date": last_date,
         "latest_common_trading_date": last_date,
+        "source_dates": {
+            "EQQQ.DE_adjusted_close": eqqq["Adj Close"].index[-1].strftime("%Y-%m-%d"),
+            "XACT-OMXS30.ST_adjusted_close": xact["Adj Close"].index[-1].strftime("%Y-%m-%d"),
+            "EURSEK=X_close": eursek["Close"].index[-1].strftime("%Y-%m-%d"),
+        },
         "benchmarks": {
             "NASDAQ": {
                 "asset": "NASDAQ",

@@ -15,6 +15,8 @@ const index = fs.readFileSync(new URL("index.html", root), "utf8");
 const css = fs.readFileSync(new URL("src/styles.css", root), "utf8");
 const publisher = fs.readFileSync(new URL("scripts/update_and_publish_daily.sh", root), "utf8");
 const launchd = fs.readFileSync(new URL("launchd/com.app3tester.daily-update.plist.template", root), "utf8");
+const publicPublisher = fs.readFileSync(new URL("scripts/update_public_market_data.sh", root), "utf8");
+const publicLaunchd = fs.readFileSync(new URL("launchd/com.app3tester.public-market-update.plist.template", root), "utf8");
 
 test("public signal has no private fields", () => {
   const forbidden = [
@@ -93,10 +95,21 @@ test("daily updater is scheduled for 09:15 and 22:00 Europe/Stockholm", () => {
 });
 
 test("automatic market valuation is displayed with EUR/SEK provenance", () => {
-  assert.match(index, /Dagligen 09:15 och 22:00/);
+  assert.match(index, /Efter stängning vardagar 22:15/);
   assert.match(index, /valuationSource/);
   assert.match(appSource, /EUR\/SEK/);
   assert.match(appSource, /applyAutomaticValuations/);
+});
+
+test("public market refresh is separate, weekday-only, and data-only", () => {
+  assert.match(publicLaunchd, /com\.app3tester\.public-market-update/);
+  assert.match(publicLaunchd, /<key>Hour<\/key><integer>22<\/integer><key>Minute<\/key><integer>15<\/integer>/);
+  assert.match(publicLaunchd, /<key>Weekday<\/key><integer>1<\/integer>/);
+  assert.match(publicLaunchd, /<key>Weekday<\/key><integer>5<\/integer>/);
+  assert.match(publicPublisher, /export_public_benchmarks\.py/);
+  assert.match(publicPublisher, /promote_public_benchmark\.py/);
+  assert.doesNotMatch(publicPublisher, /run_strategy|app3_export_public_signal|APP3_PRODUCTION_ROOT|place_order/i);
+  assert.match(publicPublisher, /data\/benchmark_series\.json\|data\/public_market_update_status\.json/);
 });
 
 test("privacy statement matches local-only implementation", () => {
