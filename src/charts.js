@@ -1,97 +1,78 @@
-function validSnapshot(row) {
-  return row && /^\d{4}-\d{2}-\d{2}$/.test(row.date) && Number.isFinite(row.value_sek);
-}
-
-function assetAtDate(transactions, date) {
-  const quantities = new Map();
-  const assets = new Map();
-  for (const transaction of [...(transactions || [])]
-    .filter((row) => row.date <= date && (row.type === "BUY" || row.type === "SELL"))
-    .sort((a, b) => a.date.localeCompare(b.date))) {
-    const quantity = quantities.get(transaction.instrument) || 0;
-    quantities.set(transaction.instrument, quantity + (transaction.type === "BUY" ? transaction.quantity : -transaction.quantity));
-    assets.set(transaction.instrument, transaction.asset);
+function positionAtDate(positions, date) {
+  let position = null;
+  for (const event of positions) {
+    if (event.effective_date > date) break;
+    position = event.position;
   }
-  const active = [...quantities.entries()].find(([, quantity]) => quantity > 1e-8);
-  return active ? assets.get(active[0]) : null;
+  return position;
 }
 
-function switchDates(transactions, firstDate) {
-  let previous = null;
-  const switches = [];
-  for (const transaction of [...(transactions || [])]
-    .filter((row) => row.type === "BUY" && row.date >= firstDate)
-    .sort((a, b) => a.date.localeCompare(b.date))) {
-    if (previous && transaction.asset !== previous) switches.push(transaction.date);
-    previous = transaction.asset;
-  }
-  return [...new Set(switches)];
-}
-
-export function buildPerformanceComparison(portfolio, benchmarkData) {
-  const startCapital = Number(portfolio?.start_capital_sek);
-  const requestedStartDate = portfolio?.started_at;
-  const empty = {
+function emptyComparison(requestedStartDate) {
+  return {
     requestedStartDate,
     comparisonStartDate: null,
+    strategyHistoryValid: false,
+    strategy: [],
     app3: [],
     nasdaq: [],
     omx: [],
     switchDates: [],
-    latest: { app3: null, nasdaq: null, omx: null },
+    latest: { strategy: null, app3: null, nasdaq: null, omx: null },
   };
-  if (!requestedStartDate || !Number.isFinite(startCapital) || startCapital <= 0) return empty;
+}
+
+export function buildPerformanceComparison(portfolio, benchmarkData, strategyHistory) {
+  const requestedStartDate = portfolio?.started_at;
+  const empty = emptyComparison(requestedStartDate);
+  if (!requestedStartDate) return empty;
 
   const sourceRows = Array.isArray(benchmarkData?.observations)
     ? benchmarkData.observations.filter((row) => row[0] >= requestedStartDate)
     : [];
-  if (!sourceRows.length) {
-    const app3Only = (portfolio.snapshots || [])
-      .filter((row) => validSnapshot(row) && row.date >= requestedStartDate)
-      .sort((a, b) => a.date.localeCompare(b.date))
-      .map((row) => ({
-        date: row.date,
-        return_pct: (row.value_sek / startCapital - 1) * 100,
-        asset: assetAtDate(portfolio.transactions, row.date),
-      }));
-    return { ...empty, app3: app3Only, latest: { ...empty.latest, app3: app3Only.at(-1)?.return_pct ?? null } };
-  }
-
-  const app3Snapshots = (portfolio.snapshots || [])
-    .filter((row) => validSnapshot(row) && row.date >= requestedStartDate)
-    .sort((a, b) => a.date.localeCompare(b.date))
-  const app3Dates = new Set(app3Snapshots.map((row) => row.date));
-  const commonRows = sourceRows.filter((row) => app3Dates.has(row[0]));
-  const comparisonRows = commonRows.length ? commonRows : sourceRows;
-  const comparisonStartDate = comparisonRows[0][0];
-  const comparisonEndDate = comparisonRows.at(-1)[0];
-  const nasdaqBase = comparisonRows[0][1];
-  const omxBase = comparisonRows[0][2];
-  const nasdaq = comparisonRows.map((row) => ({ date: row[0], return_pct: (row[1] / nasdaqBase - 1) * 100 }));
-  const omx = comparisonRows.map((row) => ({ date: row[0], return_pct: (row[2] / omxBase - 1) * 100 }));
-  const alignedSnapshots = app3Snapshots.filter((row) => (
-    row.date >= comparisonStartDate && row.date <= comparisonEndDate
-      && comparisonRows.some((sourceRow) => sourceRow[0] === row.date)
-  ));
-  const app3Base = alignedSnapshots[0]?.value_sek;
-  const app3 = Number.isFinite(app3Base) && app3Base > 0
-    ? alignedSnapshots.map((row) => ({
-      date: row.date,
-      return_pct: (row.value_sek / app3Base - 1) * 100,
-      asset: assetAtDate(portfolio.transactions, row.date),
-    }))
+  const positions = Array.isArray(strategyHistory?.positions)
+    ? [...strategyHistory.positions].sort((a, b) => a.effective_date.localeCompare(b.effective_date))
     : [];
+  if (!sourceRows.length || !positions.length) return empty;
+
+  const comparisonStartDate = sourceRows[0][0];
+  const comparisonEndDate = sourceRows.at(-1)[0];
+  const startingPosition = positionAtDate(positions, comparisonStartDate);
+  if (!startingPosition) return empty;
+
+  const nasdaqBase = sourceRows[0][1];
+  const omxBase = sourceRows[0][2];
+  const nasdaq = sourceRows.map((row) => ({ date: row[0], return_pct: (row[1] / nasdaqBase - 1) * 100 }));
+  const omx = sourceRows.map((row) => ({ date: row[0], return_pct: (row[2] / omxBase - 1) * 100 }));
+  let equity = 1;
+  const strategy = sourceRows.map((row, index) => {
+    const position = positionAtDate(positions, row[0]);
+    if (index > 0) {
+      const previous = sourceRows[index - 1];
+      const previousValue = position === "OMX" ? previous[2] : previous[1];
+      const currentValue = position === "OMX" ? row[2] : row[1];
+      equity *= currentValue / previousValue;
+    }
+    return {
+      date: row[0],
+      return_pct: (equity - 1) * 100,
+      asset: position,
+    };
+  });
 
   return {
     requestedStartDate,
     comparisonStartDate,
-    app3,
+    strategyHistoryValid: true,
+    strategy,
+    app3: strategy,
     nasdaq,
     omx,
-    switchDates: switchDates(portfolio.transactions, comparisonStartDate)
-      .filter((date) => date <= comparisonEndDate),
+    switchDates: positions
+      .filter((event) => event.effective_date >= comparisonStartDate && event.effective_date <= comparisonEndDate)
+      .map((event) => event.effective_date),
     latest: {
-      app3: app3.at(-1)?.return_pct ?? null,
+      strategy: strategy.at(-1)?.return_pct ?? null,
+      app3: strategy.at(-1)?.return_pct ?? null,
       nasdaq: nasdaq.at(-1)?.return_pct ?? null,
       omx: omx.at(-1)?.return_pct ?? null,
     },

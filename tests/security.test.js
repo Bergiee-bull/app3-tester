@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import fs from "node:fs";
+import { validateStrategyHistory } from "../src/strategy_history.js";
 
 const root = new URL("../", import.meta.url);
 const signalText = fs.readFileSync(new URL("data/app3_signal.json", root), "utf8");
 const benchmarkText = fs.readFileSync(new URL("data/benchmark_series.json", root), "utf8");
+const historyText = fs.readFileSync(new URL("data/app3_strategy_history.json", root), "utf8");
 const signal = JSON.parse(signalText);
+const history = JSON.parse(historyText);
 const appSource = fs.readFileSync(new URL("src/app.js", root), "utf8");
 const index = fs.readFileSync(new URL("index.html", root), "utf8");
 const css = fs.readFileSync(new URL("src/styles.css", root), "utf8");
@@ -26,6 +29,17 @@ test("public benchmark export has no private portfolio data or paths", () => {
   const lower = benchmarkText.toLowerCase();
   ["/users/", "quantity", "purchase_price", "starting_value_sek", "current_value_sek", "telegram", "token", "secret"]
     .forEach((term) => assert.equal(lower.includes(term), false, term));
+});
+
+test("public strategy history is sanitized production data", () => {
+  assert.equal(validateStrategyHistory(history), true);
+  assert.equal(history.is_sample_data, false);
+  const lower = historyText.toLowerCase();
+  ["quantity", "purchase_price", "starting_value_sek", "current_value_sek", "account_value", "telegram", "token", "secret", "/users/"].
+    forEach((term) => assert.equal(lower.includes(term), false, term));
+  history.positions.forEach((position) => {
+    assert.deepEqual(Object.keys(position).sort(), ["effective_date", "position", "strategy_id", "strategy_version"]);
+  });
 });
 
 test("frontend contains no strategy engine or production mutation path", () => {
@@ -51,7 +65,7 @@ test("UI exposes the exact selectable ETF for each market", () => {
 });
 
 test("UI exposes App3 and two buy-and-hold comparison series", () => {
-  assert.match(index, /App3: grön Nasdaq \/ röd OMX/);
+  assert.match(index, /App3 strategi: grön Nasdaq \/ röd OMX/);
   assert.match(index, /EQQQ buy &amp; hold/);
   assert.match(index, /XACT OMX buy &amp; hold/);
   assert.match(appSource, /loadBenchmarkData/);
@@ -63,8 +77,10 @@ test("daily updater is scheduled for 09:15 and 22:00 Europe/Stockholm", () => {
   assert.match(launchd, /Europe\/Stockholm/);
   assert.match(publisher, /app3_export_public_signal\.py/);
   assert.match(publisher, /export_public_benchmarks\.py/);
+  assert.match(publisher, /export_public_strategy_history\.py/);
   assert.match(publisher, /npm|NPM_BIN/);
   assert.match(publisher, /data\/app3_signal\.json\|data\/benchmark_series\.json/);
+  assert.match(publisher, /data\/app3_strategy_history\.json/);
 });
 
 test("automatic market valuation is displayed with EUR/SEK provenance", () => {

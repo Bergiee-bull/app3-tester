@@ -3,8 +3,26 @@ import test from "node:test";
 import fs from "node:fs";
 import { validateBenchmarkData } from "../src/benchmark_data.js";
 import { buildPerformanceComparison } from "../src/charts.js";
+import { validateStrategyHistory } from "../src/strategy_history.js";
 
 const benchmarks = JSON.parse(fs.readFileSync(new URL("../data/benchmark_series.json", import.meta.url), "utf8"));
+
+function history(positions) {
+  return {
+    schema_version: 1,
+    is_sample_data: false,
+    data_quality: "PASS",
+    strategy_id: "p13h_077_no_cash",
+    strategy_version: "v1",
+    source: "test",
+    positions: positions.map((position) => ({
+      effective_date: position[0],
+      position: position[1],
+      strategy_id: "p13h_077_no_cash",
+      strategy_version: "v1",
+    })),
+  };
+}
 
 test("public benchmark data is validated and never sample data", () => {
   assert.equal(validateBenchmarkData(benchmarks), true);
@@ -53,7 +71,7 @@ test("benchmarks start together from the first common date on or after the App3 
       { date: "2026-01-06", value_sek: 1100 },
     ],
   };
-  const result = buildPerformanceComparison(portfolio, data);
+  const result = buildPerformanceComparison(portfolio, data, history([["2025-12-01", "NASDAQ"]]));
   assert.equal(result.comparisonStartDate, "2026-01-05");
   assert.equal(result.nasdaq[0].return_pct, 0);
   assert.equal(result.omx[0].return_pct, 0);
@@ -78,12 +96,12 @@ test("App3 chart segments retain the held asset and switch markers", () => {
   };
   const result = buildPerformanceComparison(portfolio, {
     observations: [["2026-01-02", 100, 100], ["2026-03-02", 110, 105]],
-  });
+  }, history([["2025-12-01", "NASDAQ"], ["2026-02-02", "OMX"]]));
   assert.deepEqual(result.app3.map((row) => row.asset), ["NASDAQ", "OMX"]);
   assert.deepEqual(result.switchDates, ["2026-02-02"]);
 });
 
-test("App3 and benchmarks share the same dates and App3 starts at zero", () => {
+test("NASDAQ-only strategy equals EQQQ buy and hold on every date", () => {
   const portfolio = {
     started_at: "2026-01-02",
     start_capital_sek: 1000,
@@ -102,16 +120,14 @@ test("App3 and benchmarks share the same dates and App3 starts at zero", () => {
       ["2026-01-05", 110, 190],
       ["2026-01-06", 120, 220],
     ],
-  });
+  }, history([["2025-12-01", "NASDAQ"]]));
+  assert.equal(result.strategyHistoryValid, true);
   assert.deepEqual(result.app3.map((row) => row.date), ["2026-01-02", "2026-01-05", "2026-01-06"]);
-  assert.deepEqual(result.nasdaq.map((row) => row.date), result.app3.map((row) => row.date));
-  assert.deepEqual(result.omx.map((row) => row.date), result.app3.map((row) => row.date));
+  result.app3.forEach((row, index) => assert.ok(Math.abs(row.return_pct - result.nasdaq[index].return_pct) < 1e-12));
   assert.equal(result.app3[0].return_pct, 0);
-  assert.equal(result.nasdaq[0].return_pct, 0);
-  assert.equal(result.omx[0].return_pct, 0);
 });
 
-test("App3 is not plotted beyond the latest common benchmark date", () => {
+test("OMX-only strategy equals XACT buy and hold on every date", () => {
   const portfolio = {
     started_at: "2026-01-02",
     start_capital_sek: 1000,
@@ -128,10 +144,59 @@ test("App3 is not plotted beyond the latest common benchmark date", () => {
     observations: [
       ["2026-01-02", 100, 200],
       ["2026-01-05", 110, 190],
+      ["2026-01-06", 120, 220],
     ],
-  });
-  assert.deepEqual(result.app3.map((row) => row.date), ["2026-01-02", "2026-01-05"]);
-  assert.deepEqual(result.nasdaq.map((row) => row.date), ["2026-01-02", "2026-01-05"]);
-  assert.equal(result.latest.app3, result.app3.at(-1).return_pct);
-  assert.equal(result.latest.nasdaq, result.nasdaq.at(-1).return_pct);
+  }, history([["2025-12-01", "OMX"]]));
+  result.app3.forEach((row, index) => assert.ok(Math.abs(row.return_pct - result.omx[index].return_pct) < 1e-12));
+  assert.equal(result.app3[0].return_pct, 0);
+});
+
+test("A strategy switch chains returns without rebasing", () => {
+  const result = buildPerformanceComparison(
+    { started_at: "2026-01-02" },
+    {
+      observations: [
+        ["2026-01-02", 100, 200],
+        ["2026-01-05", 110, 190],
+        ["2026-01-06", 121, 200],
+      ],
+    },
+    history([["2025-12-01", "NASDAQ"], ["2026-01-06", "OMX"]]),
+  );
+  assert.deepEqual(result.app3.map((row) => row.asset), ["NASDAQ", "NASDAQ", "OMX"]);
+  assert.ok(Math.abs(result.app3[1].return_pct - 10) < 1e-12);
+  assert.ok(Math.abs(result.app3[2].return_pct - ((1.1 * (200 / 190) - 1) * 100)) < 1e-12);
+  result.nasdaq.forEach((row, index) => assert.ok(Math.abs(row.return_pct - [0, 10, 21][index]) < 1e-12));
+});
+
+test("Personal purchase data does not affect strategy equity", () => {
+  const benchmarkData = {
+    observations: [
+      ["2026-01-02", 100, 200],
+      ["2026-01-05", 110, 190],
+    ],
+  };
+  const strategyHistory = history([["2025-12-01", "NASDAQ"]]);
+  const first = buildPerformanceComparison(
+    { started_at: "2026-01-02", start_capital_sek: 1000, snapshots: [{ date: "2026-01-02", value_sek: 1000 }] },
+    benchmarkData,
+    strategyHistory,
+  );
+  const second = buildPerformanceComparison(
+    { started_at: "2026-01-02", start_capital_sek: 999999, snapshots: [{ date: "2026-01-02", value_sek: 123456 }] },
+    benchmarkData,
+    strategyHistory,
+  );
+  assert.deepEqual(second.strategy, first.strategy);
+  assert.deepEqual(second.nasdaq, first.nasdaq);
+});
+
+test("Invalid or missing strategy history blocks the comparison", () => {
+  const result = buildPerformanceComparison(
+    { started_at: "2026-01-02" },
+    { observations: [["2026-01-02", 100, 200], ["2026-01-05", 110, 190]] },
+    null,
+  );
+  assert.equal(result.strategyHistoryValid, false);
+  assert.deepEqual(result.strategy, []);
 });

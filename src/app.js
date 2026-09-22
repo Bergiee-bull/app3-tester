@@ -1,5 +1,6 @@
 import { loadAssetRegistry } from "./asset_registry.js";
-import { loadBenchmarkData } from "./benchmark_data.js?v=1.2.3";
+import { loadBenchmarkData } from "./benchmark_data.js?v=1.2.4";
+import { loadStrategyHistory } from "./strategy_history.js?v=1.2.4";
 import { assessSignal, signalViewModel } from "./signal.js";
 import { createPortfolioStore } from "./storage.js";
 import {
@@ -11,8 +12,8 @@ import {
   recordSnapshot,
   rememberSignal,
   transactionValueSek,
-} from "./portfolio.js?v=1.2.3";
-import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js?v=1.2.3";
+} from "./portfolio.js?v=1.2.4";
+import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js?v=1.2.4";
 
 const $ = (id) => document.getElementById(id);
 const store = createPortfolioStore(window.localStorage);
@@ -20,7 +21,9 @@ let portfolio = store.load();
 let publicSignal = null;
 let registry = null;
 let benchmarkData = null;
+let strategyHistory = null;
 let benchmarkError = null;
+let strategyHistoryError = null;
 let signalAssessment = { verified: false };
 
 function formatDate(value) {
@@ -196,22 +199,26 @@ function renderSignalHistory() {
 
 function renderChart() {
   if ($("performanceSection").hidden) return;
-  const comparison = buildPerformanceComparison(portfolio, benchmarkData);
+  const comparison = buildPerformanceComparison(portfolio, benchmarkData, strategyHistory);
   drawPerformanceChart($("performanceChart"), comparison);
-  setReturn($("app3ChartReturn"), comparison.latest.app3);
+  setReturn($("app3ChartReturn"), comparison.latest.strategy);
   setReturn($("nasdaqChartReturn"), comparison.latest.nasdaq);
   setReturn($("omxChartReturn"), comparison.latest.omx);
-  if (benchmarkError) {
-    $("chartNote").textContent = `${benchmarkError} App3-värden visas utan benchmark.`;
+  if (benchmarkError || strategyHistoryError || !comparison.strategyHistoryValid) {
+    $("chartNote").textContent = "Strategijämförelsen kan inte verifieras just nu. Benchmarkdata eller publik strategihistorik saknas.";
   } else if (!comparison.comparisonStartDate) {
-    $("chartNote").textContent = "Benchmarkkurvorna börjar när validerad marknadsdata finns för ditt lokala startdatum.";
+    $("chartNote").textContent = "Strategijämförelsen börjar när validerad marknadsdata finns för ditt startdatum.";
   } else {
     const startText = formatDate(comparison.comparisonStartDate);
     const shifted = comparison.comparisonStartDate !== comparison.requestedStartDate
       ? ` Första gemensamma handelsdag efter ditt köp är ${startText}.`
       : "";
     const latestText = formatDate(benchmarkData.latest_common_trading_date);
-    $("chartNote").textContent = `Alla kurvor är normaliserade till 0 % från den första gemensamma handelsdagen efter ditt App3-köp.${shifted} EQQQ och XACT OMXS30 ESG använder Adjusted Close i SEK. Benchmarkdata t.o.m. ${latestText}.`;
+    $("chartNote").textContent = "App3 strategi använder publik strategihistorik och samma Adjusted Close-serier som benchmarkerna."
+      + shifted
+      + " Alla kurvor startar på 0 % från den första gemensamma handelsdagen. Benchmarkdata t.o.m. "
+      + latestText
+      + ". Din faktiska depå visas separat under Min portfölj.";
   }
 }
 
@@ -371,8 +378,13 @@ async function loadPublicData() {
       benchmarkError = error.message;
       return null;
     });
+    const strategyHistoryPromise = loadStrategyHistory().catch((error) => {
+      strategyHistoryError = error.message;
+      return null;
+    });
     registry = await loadAssetRegistry();
     benchmarkData = await benchmarkPromise;
+    strategyHistory = await strategyHistoryPromise;
     if (benchmarkData && portfolio.started_at) {
       portfolio = store.save(applyAutomaticValuations(portfolio, benchmarkData));
     }
@@ -412,4 +424,4 @@ window.addEventListener("resize", renderChart);
 
 applyTheme(portfolio.settings.theme);
 loadPublicData();
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=1.2.3");
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=1.2.4");

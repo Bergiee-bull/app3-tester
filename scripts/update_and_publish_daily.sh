@@ -23,8 +23,11 @@ fi
 
 SIGNAL_EXPORTER="$PRODUCTION_ROOT/scripts/app3_export_public_signal.py"
 DECISION_FILE="$PRODUCTION_ROOT/data/processed/decision_v1.json"
-if [[ ! -f "$SIGNAL_EXPORTER" || ! -f "$DECISION_FILE" ]]; then
-  echo "App3 production-exporter eller decision_v1.json saknas under APP3_PRODUCTION_ROOT." >&2
+FEEDBACK_FILE="$PRODUCTION_ROOT/data/processed/app3_signal_feedback.json"
+MARKET_SERIES="$PRODUCTION_ROOT/data/outputs/app1/rotation_live/rotation_live_series.csv"
+HISTORY_EXPORTER="$REPO_ROOT/scripts/export_public_strategy_history.py"
+if [[ ! -f "$SIGNAL_EXPORTER" || ! -f "$DECISION_FILE" || ! -f "$FEEDBACK_FILE" || ! -f "$MARKET_SERIES" ]]; then
+  echo "App3 production-exporter, decision_v1.json, signal feedback eller marknadsserie saknas under APP3_PRODUCTION_ROOT." >&2
   exit 2
 fi
 
@@ -40,6 +43,7 @@ if $DRY_RUN; then
   trap 'rm -rf "$TEMP_DIR"' EXIT
   SIGNAL_OUTPUT="$TEMP_DIR/app3_signal.json"
   BENCHMARK_OUTPUT="$TEMP_DIR/benchmark_series.json"
+  HISTORY_OUTPUT="$TEMP_DIR/app3_strategy_history.json"
 else
   if [[ "$($GIT_BIN branch --show-current)" != "main" ]]; then
     echo "Daglig publicering kräver branch main." >&2
@@ -52,6 +56,7 @@ else
   "$GIT_BIN" pull --ff-only origin main
   SIGNAL_OUTPUT="$REPO_ROOT/data/app3_signal.json"
   BENCHMARK_OUTPUT="$REPO_ROOT/data/benchmark_series.json"
+  HISTORY_OUTPUT="$REPO_ROOT/data/app3_strategy_history.json"
 fi
 
 "$PYTHON_BIN" "$SIGNAL_EXPORTER" \
@@ -59,7 +64,12 @@ fi
   --output "$SIGNAL_OUTPUT"
 "$PYTHON_BIN" "$REPO_ROOT/scripts/export_public_benchmarks.py" \
   --output "$BENCHMARK_OUTPUT"
-"$NODE_BIN" "$REPO_ROOT/scripts/validate-data.mjs" "$SIGNAL_OUTPUT" "$BENCHMARK_OUTPUT"
+"$PYTHON_BIN" "$HISTORY_EXPORTER" \
+  --feedback "$FEEDBACK_FILE" \
+  --decision "$DECISION_FILE" \
+  --market-series "$MARKET_SERIES" \
+  --output "$HISTORY_OUTPUT"
+"$NODE_BIN" "$REPO_ROOT/scripts/validate-data.mjs" "$SIGNAL_OUTPUT" "$BENCHMARK_OUTPUT" "$HISTORY_OUTPUT"
 
 if $DRY_RUN; then
   echo "DRY RUN OK: signal, ETF-kurser och EUR/SEK validerades. Inget publicerades."
@@ -70,17 +80,17 @@ fi
 
 while IFS= read -r changed_file; do
   case "$changed_file" in
-    data/app3_signal.json|data/benchmark_series.json) ;;
+    data/app3_signal.json|data/benchmark_series.json|data/app3_strategy_history.json) ;;
     *) echo "Oväntad fil ändrades: $changed_file" >&2; exit 1 ;;
   esac
 done < <("$GIT_BIN" diff --name-only)
 
-if "$GIT_BIN" diff --quiet -- data/app3_signal.json data/benchmark_series.json; then
+if "$GIT_BIN" diff --quiet -- data/app3_signal.json data/benchmark_series.json data/app3_strategy_history.json; then
   echo "Ingen ny publik data att publicera."
   exit 0
 fi
 
-"$GIT_BIN" add -- data/app3_signal.json data/benchmark_series.json
+"$GIT_BIN" add -- data/app3_signal.json data/benchmark_series.json data/app3_strategy_history.json
 "$GIT_BIN" commit -m "Update App3 public data $(date +%F)"
 "$GIT_BIN" push origin main
 echo "App3 Tester-data publicerad. GitHub Pages deploy startar via Actions."

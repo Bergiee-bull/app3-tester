@@ -122,22 +122,31 @@ calculation happens in the browser. Because EQQQ is distributing, cash
 distributions must be recorded locally before they are reflected in the actual
 portfolio value. Benchmark curves use provider-reported Adjusted Close.
 
-The chart compares the user's local App3 valuation snapshots with two public
-buy-and-hold benchmarks. The chart uses only dates shared by the local App3
-snapshots and the validated benchmark series, so no curve can extend beyond
-the latest common completed trading date. All three series start at 0% on the
-first shared date on or after the user's locally stored first purchase:
+The performance chart is a **theoretical App3 strategy equity curve**, not the
+user's local account valuation. It chains daily returns from the same canonical
+public benchmark series used by the two buy-and-hold curves. The public
+position history is stored in `data/app3_strategy_history.json` and contains
+only sanitized production strategy events. Personal transactions, purchase
+price, quantity, fees, FX input, and local snapshots cannot change this chart;
+the personal result remains in **Min portfölj**.
 
-- App3 is green while the recorded holding is Nasdaq and red while it is OMX.
+The chart uses only dates shared by the validated benchmark series, so no curve
+can extend beyond the latest common completed trading date. All three series
+start at 0% on the first common trading date on or after the user's locally
+stored start date:
+
+- App3 strategy is green while the public strategy holds Nasdaq and red while it holds OMX.
 - Nasdaq buy-and-hold uses `EQQQ.DE` Adjusted Close converted to SEK with
   `EURSEK=X`.
 - OMX buy-and-hold uses `XACT-OMXS30.ST` Adjusted Close in SEK.
 
+The strategy curve follows the previous asset until the effective date of a
+public switch and then chains the new asset's daily return without rebasing.
 The two benchmark lines use separate grey shades. Thin vertical markers show
-recorded App3 asset switches. Benchmark data is public, contains no user
-portfolio values, and is rejected if marked as sample data or if provenance
-validation fails. Yahoo Adjusted Close may differ from actual account returns
-because of fees, tax, spread, and provider adjustments.
+public strategy switches. If benchmark data or strategy history is missing,
+invalid, or sample-marked, the comparison is blocked instead of falling back
+to personal snapshots. Yahoo Adjusted Close may differ from actual account
+returns because of fees, tax, spread, and provider adjustments.
 
 Refresh the sanitized public benchmark file with:
 
@@ -155,9 +164,11 @@ fail-closed chain:
 
 1. Export the sanitized App3 signal from the private production workspace.
 2. Fetch EQQQ, XACT OMXS30, and EUR/SEK through `yfinance`.
-3. Validate both public JSON files and reject sample data.
+3. Export and validate the public signal, benchmark data, and sanitized
+   strategy history; reject sample data.
 4. Run all tests.
-5. Commit only `data/app3_signal.json` and `data/benchmark_series.json`.
+5. Commit only `data/app3_signal.json`, `data/benchmark_series.json`, and
+   `data/app3_strategy_history.json`.
 6. Push `main`, after which GitHub Actions deploys GitHub Pages.
 
 Test the complete chain without changing or publishing files:
