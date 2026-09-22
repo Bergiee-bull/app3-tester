@@ -37,10 +37,9 @@ self.addEventListener("fetch", (event) => {
     event.respondWith((async () => {
       try {
         const response = await fetch(event.request, { cache: "no-store" });
-        if (response.ok) {
-          const cache = await caches.open(CACHE);
-          await cache.put(event.request, response.clone());
-        }
+        if (!response.ok) throw new Error(`Public data request failed: ${response.status}`);
+        const cache = await caches.open(CACHE);
+        await cache.put(event.request, response.clone());
         return response;
       } catch (error) {
         const cached = await caches.match(event.request);
