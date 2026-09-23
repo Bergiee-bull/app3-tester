@@ -56,9 +56,13 @@ test("frontend contains no strategy engine or production mutation path", () => {
 test("reconciliation stays local and does not publish private portfolio data", () => {
   assert.doesNotMatch(reconciliationSource, /fetch\(|XMLHttpRequest|navigator\.sendBeacon/);
   assert.doesNotMatch(reconciliationSource, /decision_v1\.json|current_position|Telegram|place_order/i);
-  assert.match(index, /Min App3-portfölj brutto/);
+  assert.doesNotMatch(index, /Min App3-portfölj brutto/);
+  assert.match(index, /App3 strategi/);
+  assert.match(index, /EQQQ B&amp;H/);
+  assert.match(index, /XACT OMX B&amp;H/);
   assert.match(appSource, /buildComparisonReconciliation/);
   assert.match(appSource, /assertComparisonReconciles/);
+  assert.match(reconciliationSource, /comparable_gross_return_pct/);
 });
 
 test("PWA and responsive accessibility hooks exist", () => {

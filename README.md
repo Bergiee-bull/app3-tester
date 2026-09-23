@@ -277,7 +277,7 @@ status files use network-first loading; offline, the last cached copy is used an
 the UI marks the data as last verified. Data-only updates do not require a
 reinstall and do not touch localStorage.
 
-Frontend version `1.3.0` is shown under Settings/Om. A real frontend version
+Frontend version `1.3.1` is shown under Settings/Om. A real frontend version
 change uses a new service-worker cache and a one-time update banner. Clicking
 Uppdatera reloads once; the local portfolio remains untouched.
 

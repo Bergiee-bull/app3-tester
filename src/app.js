@@ -1,7 +1,7 @@
 import { loadAssetRegistry } from "./asset_registry.js";
-import { loadBenchmarkData } from "./benchmark_data.js?v=1.3.0";
-import { loadStrategyHistory } from "./strategy_history.js?v=1.3.0";
-import { loadMarketStatus } from "./market_status.js?v=1.3.0";
+import { loadBenchmarkData } from "./benchmark_data.js?v=1.3.1";
+import { loadStrategyHistory } from "./strategy_history.js?v=1.3.1";
+import { loadMarketStatus } from "./market_status.js?v=1.3.1";
 import { assessSignal, signalViewModel } from "./signal.js";
 import { createPortfolioStore } from "./storage.js";
 import {
@@ -13,13 +13,13 @@ import {
   recordSnapshot,
   rememberSignal,
   transactionValueSek,
-} from "./portfolio.js?v=1.3.0";
-import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js?v=1.3.0";
+} from "./portfolio.js?v=1.3.1";
+import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js?v=1.3.1";
 import { assertComparisonReconciles, buildComparisonReconciliation } from "./reconciliation.js";
 
 const $ = (id) => document.getElementById(id);
 const store = createPortfolioStore(window.localStorage);
-const APP_VERSION = "1.3.0";
+const APP_VERSION = "1.3.1";
 let portfolio = store.load();
 let publicSignal = null;
 let registry = null;
@@ -250,7 +250,6 @@ function renderChart() {
   const comparison = buildPerformanceComparison(portfolio, benchmarkData, strategyHistory);
   const reconciliation = buildComparisonReconciliation(portfolio, benchmarkData, strategyHistory, comparison);
   drawPerformanceChart($("performanceChart"), comparison);
-  setReturn($("portfolioChartReturn"), reconciliation.personal.comparable_gross_return_pct);
   setReturn($("app3ChartReturn"), comparison.latest.strategy);
   setReturn($("nasdaqChartReturn"), comparison.latest.nasdaq);
   setReturn($("omxChartReturn"), comparison.latest.omx);
@@ -267,21 +266,8 @@ function renderChart() {
   } else if (!comparison.comparisonStartDate) {
     $("chartNote").textContent = "Strategijämförelsen börjar när validerad marknadsdata finns för ditt startdatum.";
   } else {
-    const shifted = comparison.firstMarketObservation !== comparison.requestedStartDate
-      ? ` Första gemensamma marknadsobservation är ${formatDate(comparison.firstMarketObservation)}; execution-bryggan bevaras.`
-      : "";
     const latestText = formatDate(reconciliation.comparison_end);
-    const personalText = formatPercent(reconciliation.personal.comparable_gross_return_pct);
-    const feeText = formatPercent(reconciliation.breakdown.fees_pp);
-    const asOfWarning = reconciliation.portfolio_as_of_date && reconciliation.portfolio_as_of_date !== reconciliation.comparison_end
-      ? ` Din faktiska depå är värderad t.o.m. ${formatDate(reconciliation.portfolio_as_of_date)}; nettoresultatet jämförs därför inte direkt med grafens slutdag.`
-      : "";
-    $("chartNote").textContent = "App3 strategi använder publik strategihistorik och samma Adjusted Close-serier som benchmarkerna."
-      + shifted
-      + ` Alla kurvor och bruttoportföljjämförelsen startar vid ${formatDate(reconciliation.comparison_start)} och slutar vid ${latestText}.`
-      + ` Min App3-portfölj brutto: ${personalText}. Avgiftseffekt: ${feeText}.`
-      + asOfWarning
-      + " EQQQ jämförs i SEK som totalavkastning; därför kan resultatet avvika från kursutvecklingen i EUR hos mäklaren. Din faktiska nettoavkastning visas separat i Min portfölj.";
+    $("chartNote").textContent = `Jämförelse t.o.m. ${latestText}. App3-strategin jämförs med EQQQ Buy & Hold och XACT OMX Buy & Hold från samma startdatum. EQQQ jämförs som totalavkastning i SEK.`;
   }
 }
 
@@ -495,4 +481,4 @@ applyTheme(portfolio.settings.theme);
 checkAppVersion();
 renderMarketStatus();
 loadPublicData();
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=1.3.0");
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=1.3.1");
