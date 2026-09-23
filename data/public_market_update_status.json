@@ -2,13 +2,13 @@
   "schema_version": 1,
   "source": "public_market_update",
   "status": "fresh",
-  "attempted_at": "2026-09-22T22:15:07+02:00",
-  "latest_verified_market_date": "2026-09-22",
-  "candidate_market_date": "2026-09-22",
+  "attempted_at": "2026-09-23T22:15:07+02:00",
+  "latest_verified_market_date": "2026-09-23",
+  "candidate_market_date": "2026-09-23",
   "latest_source_dates": {
-    "EQQQ.DE_adjusted_close": "2026-09-22",
-    "XACT-OMXS30.ST_adjusted_close": "2026-09-22",
-    "EURSEK=X_close": "2026-09-22"
+    "EQQQ.DE_adjusted_close": "2026-09-23",
+    "XACT-OMXS30.ST_adjusted_close": "2026-09-23",
+    "EURSEK=X_close": "2026-09-23"
   },
   "is_sample_data": false,
   "error": null
