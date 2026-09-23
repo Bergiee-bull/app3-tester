@@ -102,6 +102,7 @@ done < <("$GIT_BIN" diff --name-only)
 
 if "$GIT_BIN" diff --quiet -- data/app3_signal.json data/benchmark_series.json data/app3_strategy_history.json; then
   echo "Ingen ny publik data att publicera."
+  "$NODE_BIN" "$REPO_ROOT/scripts/app3_publish_switch_notification.mjs"
   exit 0
 fi
 
@@ -109,3 +110,4 @@ fi
 "$GIT_BIN" commit -m "Update App3 public data $(date +%F)"
 "$GIT_BIN" push origin main
 echo "App3 Tester-data publicerad. GitHub Pages deploy startar via Actions."
+"$NODE_BIN" "$REPO_ROOT/scripts/app3_publish_switch_notification.mjs"

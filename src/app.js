@@ -1,7 +1,7 @@
 import { loadAssetRegistry } from "./asset_registry.js";
-import { loadBenchmarkData } from "./benchmark_data.js?v=1.3.1";
-import { loadStrategyHistory } from "./strategy_history.js?v=1.3.1";
-import { loadMarketStatus } from "./market_status.js?v=1.3.1";
+import { loadBenchmarkData } from "./benchmark_data.js?v=1.4.0";
+import { loadStrategyHistory } from "./strategy_history.js?v=1.4.0";
+import { loadMarketStatus } from "./market_status.js?v=1.4.0";
 import { assessSignal, signalViewModel } from "./signal.js";
 import { createPortfolioStore } from "./storage.js";
 import {
@@ -13,13 +13,14 @@ import {
   recordSnapshot,
   rememberSignal,
   transactionValueSek,
-} from "./portfolio.js?v=1.3.1";
-import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js?v=1.3.1";
+} from "./portfolio.js?v=1.4.0";
+import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js?v=1.4.0";
 import { assertComparisonReconciles, buildComparisonReconciliation } from "./reconciliation.js";
+import { initPushControls } from "./push_notifications.js?v=1.4.0";
 
 const $ = (id) => document.getElementById(id);
 const store = createPortfolioStore(window.localStorage);
-const APP_VERSION = "1.3.1";
+const APP_VERSION = "1.4.0";
 let portfolio = store.load();
 let publicSignal = null;
 let registry = null;
@@ -481,4 +482,5 @@ applyTheme(portfolio.settings.theme);
 checkAppVersion();
 renderMarketStatus();
 loadPublicData();
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=1.3.1");
+initPushControls();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=1.4.0");

@@ -233,8 +233,10 @@ tail -f data/logs/app3_tester_daily.err.log
 
 Remove the schedule with `bash scripts/uninstall_daily_update_agent.sh`. The Mac
 must be running with network access and valid Git credentials. A failed signal
-export, provenance check, price/FX fetch, test, or push stops the chain; stale or
-invalid data is never published as a successful update.
+export, provenance check, price/FX fetch, or test stops the chain; stale or
+invalid data is never published as a successful update. An enabled push
+provider failure is reported after publication and leaves the event unmarked
+so the next run can retry safely.
 
 The separate market refresh has a monotonicity guard: a fetched common date that
 is older than the currently published date is rejected. This prevents an early
@@ -277,9 +279,38 @@ status files use network-first loading; offline, the last cached copy is used an
 the UI marks the data as last verified. Data-only updates do not require a
 reinstall and do not touch localStorage.
 
-Frontend version `1.3.1` is shown under Settings/Om. A real frontend version
+Frontend version `1.4.0` is shown under Settings/Om. A real frontend version
 change uses a new service-worker cache and a one-time update banner. Clicking
 Uppdatera reloads once; the local portfolio remains untouched.
+
+### Bytesnotiser
+
+App3 Tester har stöd för frivilliga OneSignal Web Push-notiser. Frontendens
+opt-in skickar endast en public positionssignal till OneSignal när App3 faktiskt
+byter mellan Nasdaq och OMX. HOLD, upprepade körningar, nya marknadsdata och
+nya appversioner ger ingen notis. Den lokala portföljen skickas aldrig.
+
+Push är avstängt som standard. För att konfigurera en OneSignal Web-app:
+
+1. Skapa en OneSignal Web-app och lägg dess publika App ID i
+   `data/push_config.json` (`enabled: true`, `app_id: "..."`). App ID:t är inte
+   en hemlighet och kan publiceras med frontend.
+2. Lägg REST API-nyckeln lokalt i `.env` eller i
+   `~/.config/app3-tester/push.env`. Utgå från `.env.example` och sätt
+   `APP3_PUSH_NOTIFICATIONS_ENABLED=true`.
+3. Kör `node scripts/app3_publish_switch_notification.mjs --dry-run` för att
+   verifiera signal och deduplicering utan att skicka.
+4. Den befintliga dagliga publiceringen försöker därefter skicka en bytesnotis
+   efter validerad public signal. Vid providerfel skrivs inget som skickat och
+   nästa körning kan försöka igen.
+
+State sparas lokalt i `~/Library/Application Support/App3 Tester/` och innehåller
+endast senaste publika event-id och providerresultat. Den committas inte.
+
+På iPhone/iPad kräver Web Push att webbappen först läggs till på hemskärmen,
+från iOS/iPadOS 16.4 eller senare. På Android och desktop används webbläsarens
+vanliga tillståndsdialog. Notisen öppnar endast den publika App3 Tester-sidan;
+den lägger inte order och ändrar inte den lokala portföljen.
 
 ## GitHub Pages
 
@@ -294,7 +325,9 @@ To publish after repository review:
 3. Merge the reviewed feature branch into `main`.
 4. Push `main` and enable GitHub Pages with **GitHub Actions** as the source.
 
-No push or Pages publication is performed automatically by the local build.
+The local build does not send push notifications. The installed daily publisher
+may send an enabled switch notification after a validated signal; GitHub Pages
+itself never holds the provider secret.
 
 ## Updating The Signal
 
@@ -318,8 +351,8 @@ fail-closed behavior, PWA metadata, and responsive accessibility hooks.
 ## Scope
 
 V1 intentionally has no login, cloud database, payments, social features,
-per-user notifications, push notifications, broker connection, or automatic
-orders.
+broker connection, or automatic orders. Optional switch-only Web Push is kept
+separate from App3 production and requires explicit user opt-in.
 
 App3 Tester is a research/test tool, not investment advice. Historical returns
 do not guarantee future returns.

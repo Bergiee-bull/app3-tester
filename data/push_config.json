@@ -1,0 +1,8 @@
+{
+  "enabled": false,
+  "provider": "onesignal",
+  "app_id": null,
+  "service_worker_path": "onesignal/OneSignalSDKWorker.js",
+  "service_worker_scope": "/app3-tester/onesignal/",
+  "app_url": "https://bergiee-bull.github.io/app3-tester/"
+}
