@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-25T22:00:01+02:00",
+  "generated_at": "2026-09-26T09:15:01+02:00",
   "is_sample_data": false,
   "strategy": {
     "id": "p13h_077_no_cash",
@@ -11,12 +11,12 @@
     "recommended_asset": "NASDAQ",
     "previous_asset": "NASDAQ",
     "action": "HOLD",
-    "signal_date": "2026-09-24",
-    "effective_date": "2026-09-25"
+    "signal_date": "2026-09-25",
+    "effective_date": "2026-09-28"
   },
   "system": {
     "status": "OK",
     "data_quality": "PASS",
-    "market_date": "2026-09-24"
+    "market_date": "2026-09-25"
   }
 }
