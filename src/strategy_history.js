@@ -47,6 +47,33 @@ export function validateStrategyHistory(payload) {
   return true;
 }
 
+export function buildVisibleStrategyEvents(payload, startDate, registry) {
+  if (!validateStrategyHistory(payload) || !validDate(startDate) || !isObject(registry)) return [];
+
+  const positionsAtStart = payload.positions.filter((row) => row.effective_date <= startDate);
+  const activeAtStart = positionsAtStart.at(-1);
+  if (!activeAtStart) return [];
+
+  const event = (date, fromPosition, toPosition, type) => ({
+    date,
+    type,
+    from_position: fromPosition,
+    to_position: toPosition,
+    title: type === "START" ? `START – ${toPosition}` : `${fromPosition} → ${toPosition}`,
+    instrument: registry[toPosition]?.default_instrument || toPosition,
+    instrument_name: registry[toPosition]?.instrument_name || "",
+  });
+
+  const events = [event(startDate, null, activeAtStart.position, "START")];
+  let currentPosition = activeAtStart.position;
+  for (const row of payload.positions) {
+    if (row.effective_date <= startDate || row.position === currentPosition) continue;
+    events.push(event(row.effective_date, currentPosition, row.position, "SWITCH"));
+    currentPosition = row.position;
+  }
+  return events;
+}
+
 export async function loadStrategyHistory(fetchImpl = fetch) {
   const response = await fetchImpl("./data/app3_strategy_history.json", { cache: "no-store" });
   if (!response.ok) throw new Error("App3-strategihistoriken kunde inte laddas.");

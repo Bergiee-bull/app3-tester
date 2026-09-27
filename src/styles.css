@@ -132,11 +132,7 @@ dd { margin: 3px 0 0; font-weight: 700; }
 .file-button input { display: none; }
 .settings-meta { display: flex; gap: 38px; }
 .notification-section { border-top: 1px solid var(--line); }
-.notification-status { display: flex; justify-content: space-between; align-items: center; max-width: 360px; padding: 14px 0; border-bottom: 1px solid var(--line); }
-.notification-status strong[data-state="on"] { color: var(--accent); }
-.notification-status strong[data-state="off"] { color: var(--muted); }
-.notification-actions { margin: 12px 0 0; }
-.ios-hint { max-width: 620px; }
+.telegram-button { display: inline-flex; align-items: center; justify-content: center; margin-top: 8px; text-decoration: none; }
 footer { width: min(100% - 40px, 1040px); margin: 0 auto; padding: 32px 0 60px; display: grid; color: var(--text-muted); font-size: .76rem; }
 dialog { width: min(92vw, 620px); max-height: 90vh; overflow: auto; border: 1px solid var(--line); border-radius: var(--radius); padding: 0; background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
 dialog::backdrop { background: rgba(5, 15, 12, .64); }
@@ -176,6 +172,7 @@ input, select { width: 100%; border: 1px solid var(--line); border-radius: var(-
   .form-row { grid-template-columns: 1fr; gap: 0; }
   .settings-actions { display: grid; }
   .settings-actions > * { width: 100%; justify-content: center; }
+  .telegram-button { width: 100%; }
   .confirm-actions { display: grid; }
   .history-row { grid-template-columns: 88px minmax(0, 1fr); gap: 5px 10px; }
   .history-row small { grid-column: 2; overflow-wrap: anywhere; }

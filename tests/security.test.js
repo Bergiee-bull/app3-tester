@@ -81,7 +81,7 @@ test("UI exposes the exact selectable ETF for each market", () => {
 
 test("UI exposes App3 and two buy-and-hold comparison series", () => {
   assert.match(index, /App3 strategi: grön Nasdaq \/ röd OMX/);
-  assert.match(index, /EQQQ buy &amp; hold/);
+  assert.match(index, /EQQQ Buy &amp; Hold – avkastning beräknad i SEK/);
   assert.match(index, /XACT OMX buy &amp; hold/);
   assert.match(appSource, /loadBenchmarkData/);
 });

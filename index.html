@@ -8,7 +8,7 @@
   <title>App3 Tester</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./assets/icons/app3.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./src/styles.css?v=1.4.0">
+  <link rel="stylesheet" href="./src/styles.css?v=1.4.1">
 </head>
 <body>
   <a class="skip-link" href="#main">Hoppa till innehåll</a>
@@ -94,7 +94,7 @@
         </div>
         <div class="chart-legend" aria-label="Grafserier">
           <span><i class="legend-app3"></i>App3 strategi: grön Nasdaq / röd OMX</span>
-          <span><i class="legend-nasdaq"></i>EQQQ buy &amp; hold – totalavkastning i SEK</span>
+          <span><i class="legend-nasdaq"></i>EQQQ Buy &amp; Hold – avkastning beräknad i SEK</span>
           <span><i class="legend-omx"></i>XACT OMX buy &amp; hold</span>
         </div>
         <div class="chart-metrics" aria-label="Utveckling sedan start">
@@ -124,7 +124,7 @@
           <button class="secondary-button" id="transactionButton" type="button" hidden>Ny transaktion</button>
         </div>
         <div class="history-grid">
-          <div><h3>Signalskiften</h3><div id="signalHistory" class="empty-state">Historiken byggs när appen tar emot signaler.</div></div>
+          <div><h3>Strategihistorik</h3><div id="signalHistory" class="empty-state">Starta ditt test för att se strategihistoriken.</div></div>
           <div><h3>Mina transaktioner</h3><div id="transactionHistory" class="empty-state">Starta ditt test för att registrera en transaktion.</div></div>
         </div>
       </section>
@@ -139,8 +139,8 @@
           <button class="danger-button" id="resetButton" type="button">Radera mitt lokala test</button>
         </div>
         <dl class="settings-meta">
-          <div><dt>Appversion</dt><dd>1.4.0</dd></div>
-          <div><dt>Build</dt><dd>public-market-update</dd></div>
+          <div><dt>Appversion</dt><dd>1.4.1</dd></div>
+          <div><dt>Build</dt><dd>telegram-history-ui</dd></div>
           <div><dt>Lagring</dt><dd>Den här webbläsaren</dd></div>
         </dl>
       </section>
@@ -148,17 +148,9 @@
       <section class="settings-section notification-section" id="notificationSection" aria-labelledby="notificationTitle">
         <p class="eyebrow">BYTESNOTISER</p>
         <h2 id="notificationTitle">Notiser vid byte</h2>
-        <p class="privacy-copy">App3 skickar endast en notis när strategin byter mellan Nasdaq och OMX. HOLD ger ingen notis.</p>
-        <div class="notification-status" role="status">
-          <span>Status</span>
-          <strong id="pushStatus" data-state="off">Av</strong>
-        </div>
-        <p class="status-note" id="pushMessage">Bytesnotiser kontrolleras.</p>
-        <div class="settings-actions notification-actions">
-          <button class="primary-button" id="enablePushButton" type="button" hidden>Aktivera notiser</button>
-          <button class="secondary-button" id="disablePushButton" type="button" hidden>Stäng av notiser</button>
-        </div>
-        <p class="status-note ios-hint" id="pushIosHint" hidden>På iPhone/iPad behöver App3 Tester vara tillagd på hemskärmen för Web Push.</p>
+        <p class="privacy-copy">Få en telefonnotis endast när App3 byter mellan Nasdaq och OMX. HOLD ger ingen notis.</p>
+        <a class="primary-button telegram-button" href="https://t.me/+Qu5FJ4jS5dswYzE0" target="_blank" rel="noopener noreferrer">Få bytesnotiser i Telegram</a>
+        <p class="status-note">Telegram krävs. Gå med i App3 Tester – Signaler och aktivera kanalens notiser.</p>
       </section>
     </div>
   </main>
@@ -208,6 +200,6 @@
     </div>
   </dialog>
 
-  <script type="module" src="./src/app.js?v=1.4.0"></script>
+  <script type="module" src="./src/app.js?v=1.4.1"></script>
 </body>
 </html>

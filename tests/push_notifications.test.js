@@ -112,17 +112,17 @@ test("push state file can be persisted without repository data", () => {
   assert.equal(JSON.parse(fs.readFileSync(statePath, "utf8")).last_notified_event_id, event.signal_event_id);
 });
 
-test("frontend exposes opt-in wording and preserves PWA worker updates", () => {
+test("frontend uses Telegram invite while dormant OneSignal backend remains isolated", () => {
   const index = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
   const app = fs.readFileSync(new URL("../src/app.js", import.meta.url), "utf8");
   const worker = fs.readFileSync(new URL("../sw.js", import.meta.url), "utf8");
   assert.match(index, /Notiser vid byte/i);
-  assert.match(index, /Aktivera notiser/);
-  assert.match(index, /Stäng av notiser/);
-  assert.match(index, /v=1\.4\.0/);
-  assert.match(app, /initPushControls/);
-  assert.match(worker, /app3-tester-v1\.4\.0/);
-  assert.match(worker, /data\/push_config\.json/);
+  assert.match(index, /Få bytesnotiser i Telegram/);
+  assert.doesNotMatch(index, /Aktivera notiser|Stäng av notiser/);
+  assert.match(index, /v=1\.4\.1/);
+  assert.doesNotMatch(app, /initPushControls/);
+  assert.match(worker, /app3-tester-v1\.4\.1/);
+  assert.doesNotMatch(worker, /data\/push_config\.json/);
 });
 
 test("secrets and personal portfolio fields are absent from the public push implementation", () => {

@@ -141,9 +141,9 @@ available market observation when necessary:
   `EURSEK=X`.
 - OMX buy-and-hold uses `XACT-OMXS30.ST` Adjusted Close in SEK.
 
-The displayed EQQQ benchmark is **EQQQ buy & hold – totalavkastning i SEK**.
-EQQQ jämförs i SEK. Därför kan resultatet avvika från kursutvecklingen som visas
-i EUR hos mäklaren.
+The displayed EQQQ benchmark is **EQQQ Buy & Hold – avkastning beräknad i SEK**.
+EQQQ-avkastningen beräknas i SEK and therefore includes the EUR/SEK currency
+effect. It can differ from the price development shown in EUR by the broker.
 
 The strategy curve follows the previous asset until the effective date of a
 public switch and then chains the new asset's daily return without rebasing.
@@ -279,38 +279,21 @@ status files use network-first loading; offline, the last cached copy is used an
 the UI marks the data as last verified. Data-only updates do not require a
 reinstall and do not touch localStorage.
 
-Frontend version `1.4.0` is shown under Settings/Om. A real frontend version
+Frontend version `1.4.1` is shown under Settings/Om. A real frontend version
 change uses a new service-worker cache and a one-time update banner. Clicking
 Uppdatera reloads once; the local portfolio remains untouched.
 
 ### Bytesnotiser
 
-App3 Tester har stöd för frivilliga OneSignal Web Push-notiser. Frontendens
-opt-in skickar endast en public positionssignal till OneSignal när App3 faktiskt
-byter mellan Nasdaq och OMX. HOLD, upprepade körningar, nya marknadsdata och
-nya appversioner ger ingen notis. Den lokala portföljen skickas aldrig.
+App3 Tester länkar till den publika Telegram-kanalen **App3 Tester – Signaler**.
+Kanalen används endast för verkliga byten mellan Nasdaq och OMX; HOLD ger ingen
+bytesnotis. Webbappen visar ingen lokal på/av-status eftersom den inte kan läsa
+användarens Telegram-inställningar. Ingen bot-token eller chat-id finns i
+frontend.
 
-Push är avstängt som standard. För att konfigurera en OneSignal Web-app:
-
-1. Skapa en OneSignal Web-app och lägg dess publika App ID i
-   `data/push_config.json` (`enabled: true`, `app_id: "..."`). App ID:t är inte
-   en hemlighet och kan publiceras med frontend.
-2. Lägg REST API-nyckeln lokalt i `.env` eller i
-   `~/.config/app3-tester/push.env`. Utgå från `.env.example` och sätt
-   `APP3_PUSH_NOTIFICATIONS_ENABLED=true`.
-3. Kör `node scripts/app3_publish_switch_notification.mjs --dry-run` för att
-   verifiera signal och deduplicering utan att skicka.
-4. Den befintliga dagliga publiceringen försöker därefter skicka en bytesnotis
-   efter validerad public signal. Vid providerfel skrivs inget som skickat och
-   nästa körning kan försöka igen.
-
-State sparas lokalt i `~/Library/Application Support/App3 Tester/` och innehåller
-endast senaste publika event-id och providerresultat. Den committas inte.
-
-På iPhone/iPad kräver Web Push att webbappen först läggs till på hemskärmen,
-från iOS/iPadOS 16.4 eller senare. På Android och desktop används webbläsarens
-vanliga tillståndsdialog. Notisen öppnar endast den publika App3 Tester-sidan;
-den lägger inte order och ändrar inte den lokala portföljen.
+Äldre OneSignal/Web Push-moduler och publiceringsskript ligger kvar dormant för
+bakåtkompatibilitet, men frontend laddar inte SDK:n, hämtar inte
+`data/push_config.json` och cachar inte OneSignal-konfigurationen.
 
 ## GitHub Pages
 

@@ -1,7 +1,7 @@
 import { loadAssetRegistry } from "./asset_registry.js";
-import { loadBenchmarkData } from "./benchmark_data.js?v=1.4.0";
-import { loadStrategyHistory } from "./strategy_history.js?v=1.4.0";
-import { loadMarketStatus } from "./market_status.js?v=1.4.0";
+import { loadBenchmarkData } from "./benchmark_data.js?v=1.4.1";
+import { buildVisibleStrategyEvents, loadStrategyHistory } from "./strategy_history.js?v=1.4.1";
+import { loadMarketStatus } from "./market_status.js?v=1.4.1";
 import { assessSignal, signalViewModel } from "./signal.js";
 import { createPortfolioStore } from "./storage.js";
 import {
@@ -13,14 +13,13 @@ import {
   recordSnapshot,
   rememberSignal,
   transactionValueSek,
-} from "./portfolio.js?v=1.4.0";
-import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js?v=1.4.0";
+} from "./portfolio.js?v=1.4.1";
+import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js?v=1.4.1";
 import { assertComparisonReconciles, buildComparisonReconciliation } from "./reconciliation.js";
-import { initPushControls } from "./push_notifications.js?v=1.4.0";
 
 const $ = (id) => document.getElementById(id);
 const store = createPortfolioStore(window.localStorage);
-const APP_VERSION = "1.4.0";
+const APP_VERSION = "1.4.1";
 let portfolio = store.load();
 let publicSignal = null;
 let registry = null;
@@ -69,7 +68,7 @@ function renderMarketStatus() {
     ? "OFFLINE / senast verifierad"
     : (statusLabels[status] || "Okänd status");
   const warning = marketStatus?.status === "fresh"
-    ? "EQQQ jämförs i SEK. Därför kan resultatet avvika från kursutvecklingen som visas i EUR hos mäklaren."
+    ? "EQQQ-avkastningen beräknas i SEK och kan därför skilja sig från utvecklingen i EUR hos mäklaren."
     : `Marknadsdata ej uppdaterad – senaste verifierade datum ${date ? formatDate(date) : "saknas"}.`;
   $("marketFreshnessWarning").textContent = offline
     ? `OFFLINE / SENAST VERIFIERAD ${date ? formatDate(date) : "saknas"}. ${warning}`
@@ -232,17 +231,20 @@ function renderTransactions() {
 function renderSignalHistory() {
   const container = $("signalHistory");
   container.replaceChildren();
-  if (!portfolio.signal_history.length) {
+  if (!portfolio.started_at) {
     container.className = "empty-state";
-    container.textContent = "Historiken byggs när appen tar emot signaler.";
+    container.textContent = "Starta ditt test för att se strategihistoriken från ditt startdatum.";
+    return;
+  }
+  const events = buildVisibleStrategyEvents(strategyHistory, portfolio.started_at, registry);
+  if (!events.length) {
+    container.className = "empty-state";
+    container.textContent = "Strategihistoriken kan inte verifieras för ditt startdatum.";
     return;
   }
   container.className = "";
-  portfolio.signal_history.forEach((signal) => {
-    const transition = signal.action === "SWITCH"
-      ? `${signal.previous_asset} → ${signal.recommended_asset}`
-      : `${signal.action} ${signal.recommended_asset}`;
-    row(container, signal.signal_date, transition, `${signal.strategy_id} · ${signal.strategy_version}`);
+  events.forEach((event) => {
+    row(container, event.date, event.title, event.instrument);
   });
 }
 
@@ -268,7 +270,7 @@ function renderChart() {
     $("chartNote").textContent = "Strategijämförelsen börjar när validerad marknadsdata finns för ditt startdatum.";
   } else {
     const latestText = formatDate(reconciliation.comparison_end);
-    $("chartNote").textContent = `Jämförelse t.o.m. ${latestText}. App3-strategin jämförs med EQQQ Buy & Hold och XACT OMX Buy & Hold från samma startdatum. EQQQ jämförs som totalavkastning i SEK.`;
+    $("chartNote").textContent = `Jämförelse t.o.m. ${latestText}. App3-strategin jämförs med EQQQ Buy & Hold och XACT OMX Buy & Hold från samma startdatum. EQQQ:s avkastning beräknas i SEK och inkluderar därför valutaeffekten EUR/SEK.`;
   }
 }
 
@@ -347,6 +349,7 @@ function saveTransaction(event) {
     form.reset();
     $("portfolioDialog").close();
     renderPortfolio();
+    renderSignalHistory();
   } catch (error) {
     $("portfolioError").textContent = error.message;
     $("portfolioError").hidden = false;
@@ -482,5 +485,4 @@ applyTheme(portfolio.settings.theme);
 checkAppVersion();
 renderMarketStatus();
 loadPublicData();
-initPushControls();
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=1.4.0");
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=1.4.1");
