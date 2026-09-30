@@ -30,13 +30,15 @@ test("public benchmark data is validated and never sample data", () => {
   assert.equal(benchmarks.is_sample_data, false);
   assert.equal(benchmarks.data_quality, "PASS");
   assert.equal(benchmarks.latest_common_market_date, benchmarks.latest_common_trading_date);
-  assert.equal(benchmarks.source_dates["EQQQ.DE_adjusted_close"], benchmarks.benchmarks.NASDAQ.last_date);
+  assert.ok(benchmarks.source_dates["EQQQ.DE_adjusted_close"] >= benchmarks.benchmarks.NASDAQ.last_date);
   assert.equal(benchmarks.benchmarks.NASDAQ.adjusted_close_available, true);
   assert.equal(benchmarks.benchmarks.OMX.adjusted_close_available, true);
   assert.equal(benchmarks.latest_valuations.NASDAQ.currency, "EUR");
   assert.ok(benchmarks.latest_valuations.NASDAQ.fx_rate_to_sek > 0);
   assert.equal(benchmarks.latest_valuations.OMX.currency, "SEK");
   assert.equal(benchmarks.latest_valuations.OMX.fx_rate_to_sek, 1);
+  assert.equal(benchmarks.latest_valuations.NASDAQ.date, benchmarks.latest_common_market_date);
+  assert.equal(benchmarks.latest_valuations.OMX.date, benchmarks.latest_common_market_date);
 });
 
 test("sample benchmark data fails closed", () => {
@@ -71,6 +73,7 @@ test("sample or malformed automatic valuations fail closed", () => {
   const missingFx = structuredClone(benchmarks);
   delete missingFx.latest_valuations.NASDAQ.fx_rate_to_sek;
   assert.equal(validateBenchmarkData(missingFx), false);
+
 });
 
 test("comparison keeps the actual App3 start and bridges to the first market observation", () => {

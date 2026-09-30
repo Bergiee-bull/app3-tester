@@ -21,9 +21,19 @@ GIT_BIN="${GIT_BIN:-$(command -v git)}"
 STATUS_FILE="$REPO_ROOT/data/public_market_update_status.json"
 TARGET_FILE="$REPO_ROOT/data/benchmark_series.json"
 TEMP_DIR="$(mktemp -d)"
-trap 'rm -rf "$TEMP_DIR"' EXIT
 CANDIDATE_FILE="$TEMP_DIR/benchmark_series.json"
 REPO_WAS_CLEAN=false
+GENERATED_FILES=()
+cleanup() {
+  local status=$?
+  rm -rf "$TEMP_DIR"
+  if [[ $status -ne 0 && "$REPO_WAS_CLEAN" == true && ${#GENERATED_FILES[@]} -gt 0 ]]; then
+    "$GIT_BIN" restore --staged --worktree -- "${GENERATED_FILES[@]}" || true
+  fi
+  trap - EXIT
+  exit "$status"
+}
+trap cleanup EXIT
 
 write_status() {
   local -a args=(
@@ -50,34 +60,36 @@ privacy_check() {
 }
 
 run_update() {
-  cd "$REPO_ROOT"
+  cd "$REPO_ROOT" || return 1
   if ! $DRY_RUN; then
     [[ "$($GIT_BIN branch --show-current)" == "main" ]] || { echo "Public market update kräver branch main." >&2; return 1; }
     [[ -z "$($GIT_BIN status --porcelain)" ]] || { echo "Public market update stoppad: repot har lokala ändringar." >&2; return 1; }
     REPO_WAS_CLEAN=true
-    "$GIT_BIN" pull --ff-only origin main
+    "$GIT_BIN" pull --ff-only origin main || return 1
   fi
 
-  "$PYTHON_BIN" "$REPO_ROOT/scripts/export_public_benchmarks.py" --output "$CANDIDATE_FILE"
+  "$PYTHON_BIN" "$REPO_ROOT/scripts/export_public_benchmarks.py" --output "$CANDIDATE_FILE" || return 1
   "$NODE_BIN" "$REPO_ROOT/scripts/validate-data.mjs" \
-    "$REPO_ROOT/data/app3_signal.json" "$CANDIDATE_FILE" "$REPO_ROOT/data/app3_strategy_history.json"
+    "$REPO_ROOT/data/app3_signal.json" "$CANDIDATE_FILE" "$REPO_ROOT/data/app3_strategy_history.json" || return 1
 
   if ! $DRY_RUN; then
-    "$PYTHON_BIN" "$REPO_ROOT/scripts/promote_public_benchmark.py" --candidate "$CANDIDATE_FILE" --target "$TARGET_FILE"
-    write_status "$CANDIDATE_FILE" auto
-    "$NODE_BIN" "$REPO_ROOT/scripts/validate-data.mjs"
-    "$NPM_BIN" test
-    privacy_check
-    "$GIT_BIN" diff --check
+    GENERATED_FILES+=(data/benchmark_series.json)
+    "$PYTHON_BIN" "$REPO_ROOT/scripts/promote_public_benchmark.py" --candidate "$CANDIDATE_FILE" --target "$TARGET_FILE" || return 1
+    GENERATED_FILES+=(data/public_market_update_status.json)
+    write_status "$CANDIDATE_FILE" auto || return 1
+    "$NODE_BIN" "$REPO_ROOT/scripts/validate-data.mjs" || return 1
+    "$NPM_BIN" test || return 1
+    privacy_check || return 1
+    "$GIT_BIN" diff --check || return 1
     if ! "$GIT_BIN" diff --quiet -- data/benchmark_series.json data/public_market_update_status.json; then
-      "$GIT_BIN" add -- data/benchmark_series.json data/public_market_update_status.json
-      "$GIT_BIN" commit -m "Update App3 public market data $(date +%F)"
-      "$GIT_BIN" push origin main
+      "$GIT_BIN" add -- data/benchmark_series.json data/public_market_update_status.json || return 1
+      "$GIT_BIN" commit -m "Update App3 public market data $(date +%F)" || return 1
+      "$GIT_BIN" push origin main || return 1
     fi
   else
     "$PYTHON_BIN" "$REPO_ROOT/scripts/write_public_market_status.py" \
       --output "$TEMP_DIR/public_market_update_status.json" \
-      --benchmark "$CANDIDATE_FILE" --current "$TARGET_FILE" --status auto
+      --benchmark "$CANDIDATE_FILE" --current "$TARGET_FILE" --status auto || return 1
     echo "DRY RUN OK: senaste gemensamma marknadsdag $(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["latest_common_market_date"])' "$CANDIDATE_FILE"). Ingen publicering."
   fi
 }
@@ -88,16 +100,5 @@ if run_update; then
 fi
 
 failure_message="Public market update misslyckades. Tidigare verifierad benchmarkdata behålls."
-if ! $DRY_RUN && $REPO_WAS_CLEAN; then
-  cd "$REPO_ROOT"
-  write_status "$TARGET_FILE" stale "$failure_message" || true
-  "$NPM_BIN" test || true
-  privacy_check || true
-  "$GIT_BIN" add -- data/public_market_update_status.json
-  if ! "$GIT_BIN" diff --cached --quiet; then
-    "$GIT_BIN" commit -m "Record App3 public market update status $(date +%F)" || true
-    "$GIT_BIN" push origin main || true
-  fi
-fi
 echo "$failure_message" >&2
 exit 1

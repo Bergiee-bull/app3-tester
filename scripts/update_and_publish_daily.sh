@@ -36,11 +36,27 @@ NODE_BIN="${NODE_BIN:-$(command -v node)}"
 NPM_BIN="${NPM_BIN:-$(command -v npm)}"
 GIT_BIN="${GIT_BIN:-$(command -v git)}"
 
+REPO_STARTED_CLEAN=false
+PUBLISH_FILES=(data/app3_signal.json data/benchmark_series.json data/app3_strategy_history.json)
+GENERATED_FILES=()
+cleanup() {
+  local status=$?
+  if [[ -n "${TEMP_DIR:-}" && -d "$TEMP_DIR" ]]; then rm -rf "$TEMP_DIR"; fi
+  if [[ -n "${BENCHMARK_CANDIDATE:-}" && -f "$BENCHMARK_CANDIDATE" && -z "${TEMP_DIR:-}" ]]; then
+    rm -f "$BENCHMARK_CANDIDATE"
+  fi
+  if [[ $status -ne 0 && "$REPO_STARTED_CLEAN" == true && ${#GENERATED_FILES[@]} -gt 0 ]]; then
+    "$GIT_BIN" restore --staged --worktree -- "${GENERATED_FILES[@]}" || true
+  fi
+  trap - EXIT
+  exit "$status"
+}
+trap cleanup EXIT
+
 cd "$REPO_ROOT"
 
 if $DRY_RUN; then
   TEMP_DIR="$(mktemp -d)"
-  trap 'rm -rf "$TEMP_DIR"' EXIT
   SIGNAL_OUTPUT="$TEMP_DIR/app3_signal.json"
   BENCHMARK_OUTPUT="$TEMP_DIR/benchmark_series.json"
   BENCHMARK_CANDIDATE="$BENCHMARK_OUTPUT"
@@ -54,19 +70,21 @@ else
     echo "Daglig publicering stoppad: repot har lokala ändringar." >&2
     exit 1
   fi
+  REPO_STARTED_CLEAN=true
   "$GIT_BIN" pull --ff-only origin main
   SIGNAL_OUTPUT="$REPO_ROOT/data/app3_signal.json"
   BENCHMARK_OUTPUT="$REPO_ROOT/data/benchmark_series.json"
   BENCHMARK_CANDIDATE="$(mktemp)"
-  trap 'rm -f "$BENCHMARK_CANDIDATE"' EXIT
   HISTORY_OUTPUT="$REPO_ROOT/data/app3_strategy_history.json"
 fi
 
+if ! $DRY_RUN; then GENERATED_FILES+=(data/app3_signal.json); fi
 "$PYTHON_BIN" "$SIGNAL_EXPORTER" \
   --input "$DECISION_FILE" \
   --output "$SIGNAL_OUTPUT"
 "$PYTHON_BIN" "$REPO_ROOT/scripts/export_public_benchmarks.py" \
   --output "$BENCHMARK_CANDIDATE"
+if ! $DRY_RUN; then GENERATED_FILES+=(data/app3_strategy_history.json); fi
 "$PYTHON_BIN" "$HISTORY_EXPORTER" \
   --feedback "$FEEDBACK_FILE" \
   --decision "$DECISION_FILE" \
@@ -75,6 +93,7 @@ fi
 "$NODE_BIN" "$REPO_ROOT/scripts/validate-data.mjs" "$SIGNAL_OUTPUT" "$BENCHMARK_CANDIDATE" "$HISTORY_OUTPUT"
 
 if ! $DRY_RUN; then
+  GENERATED_FILES+=(data/benchmark_series.json)
   "$PYTHON_BIN" "$REPO_ROOT/scripts/promote_public_benchmark.py" \
     --candidate "$BENCHMARK_CANDIDATE" \
     --target "$BENCHMARK_OUTPUT"
@@ -100,13 +119,13 @@ while IFS= read -r changed_file; do
   esac
 done < <("$GIT_BIN" diff --name-only)
 
-if "$GIT_BIN" diff --quiet -- data/app3_signal.json data/benchmark_series.json data/app3_strategy_history.json; then
+if "$GIT_BIN" diff --quiet -- "${PUBLISH_FILES[@]}"; then
   echo "Ingen ny publik data att publicera."
   "$NODE_BIN" "$REPO_ROOT/scripts/app3_publish_switch_notification.mjs"
   exit 0
 fi
 
-"$GIT_BIN" add -- data/app3_signal.json data/benchmark_series.json data/app3_strategy_history.json
+"$GIT_BIN" add -- "${PUBLISH_FILES[@]}"
 "$GIT_BIN" commit -m "Update App3 public data $(date +%F)"
 "$GIT_BIN" push origin main
 echo "App3 Tester-data publicerad. GitHub Pages deploy startar via Actions."

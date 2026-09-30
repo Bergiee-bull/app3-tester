@@ -241,9 +241,25 @@ so the next run can retry safely.
 The separate market refresh has a monotonicity guard: a fetched common date that
 is older than the currently published date is rejected. This prevents an early
 09:15 run, before EQQQ.DE is complete, from replacing a newer verified evening
-dataset. On failure the previous benchmark remains intact and a privacy-safe
-status is published so the UI can show `Marknadsdata ej uppdaterad – senaste
-verifierade datum ...`.
+dataset. A validated fetch with mismatched source dates publishes
+`waiting_for_complete_market_day` and retains the latest verified common date.
+On export or validation failure, the run exits non-zero and logs the error.
+Both publishers restore only their own explicitly listed generated files if
+they started with a clean repository. A dirty repository fails closed without
+altering existing changes. Failed validation cannot publish a new dataset.
+
+ETF rows for today are excluded before 18:00 Europe/Stockholm. Today's Yahoo
+EUR/SEK daily bar is excluded until its UTC calendar day has ended, so the
+22:15 run may still wait for a completed FX row. Both ETF valuations and the
+comparison graph use the same intersection of EQQQ, XACT and FX dates, without
+forward filling. Public signal decision/effective/market dates are exported
+independently from the existing canonical production decision.
+
+Exporter regression tests use isolated fixtures and require pandas/yfinance:
+`python3 -m unittest discover -s tests -p 'test_*.py'`. GitHub Actions runs these
+as well as `npm test` before deployment. No frontend storage schema or cache
+version changes are needed for these server-side export corrections; public
+JSON already uses network-first loading with `cache: no-store`.
 
 Test and install the separate public market agent:
 

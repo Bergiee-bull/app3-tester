@@ -3,11 +3,19 @@ import test from "node:test";
 import fs from "node:fs";
 import { assessSignal, signalViewModel, validatePublicSignal } from "../src/signal.js";
 
-const signal = JSON.parse(fs.readFileSync(new URL("../data/app3_signal.json", import.meta.url), "utf8"));
+const productionSignal = JSON.parse(fs.readFileSync(new URL("../data/app3_signal.json", import.meta.url), "utf8"));
+const signal = {
+  schema_version: 1,
+  generated_at: "2026-09-28T07:00:00+02:00",
+  is_sample_data: false,
+  strategy: { id: "test_strategy", display_name: "App3", version: "v1" },
+  signal: { recommended_asset: "NASDAQ", previous_asset: "NASDAQ", action: "HOLD", signal_date: "2026-09-25", effective_date: "2026-09-28" },
+  system: { status: "OK", data_quality: "PASS", market_date: "2026-09-25" },
+};
 const registry = JSON.parse(fs.readFileSync(new URL("../data/asset_registry.json", import.meta.url), "utf8"));
 
 test("public signal schema is valid", () => {
-  assert.equal(validatePublicSignal(signal).valid, true);
+  assert.equal(validatePublicSignal(productionSignal).valid, true);
 });
 
 test("rendering is strategy agnostic", () => {
@@ -37,7 +45,9 @@ test("OMX SWITCH renders source and destination", () => {
 });
 
 test("stale signal fails closed", () => {
-  const status = assessSignal(signal, registry, { now: new Date("2026-10-01T12:00:00Z"), maxBusinessDays: 3 });
+  const stale = structuredClone(signal);
+  stale.system.market_date = "2026-09-25";
+  const status = assessSignal(stale, registry, { now: new Date("2026-10-01T12:00:00Z"), maxBusinessDays: 3 });
   assert.equal(status.verified, false);
   assert.equal(status.stale, true);
   assert.match(status.reason, /inte uppdaterad/);

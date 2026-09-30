@@ -96,6 +96,8 @@ test("daily updater is scheduled for 09:15 and 22:00 Europe/Stockholm", () => {
   assert.match(publisher, /npm|NPM_BIN/);
   assert.match(publisher, /data\/app3_signal\.json\|data\/benchmark_series\.json/);
   assert.match(publisher, /data\/app3_strategy_history\.json/);
+  assert.match(publisher, /REPO_STARTED_CLEAN/);
+  assert.match(publisher, /restore --staged --worktree/);
 });
 
 test("automatic market valuation is displayed with EUR/SEK provenance", () => {

@@ -44,15 +44,17 @@ def main() -> int:
     candidate_date = payload_date(candidate)
     current_date = payload_date(current)
     status = args.status
-    if status == "auto":
-        status = "fresh" if candidate_date and (not current_date or candidate_date >= current_date) else "waiting_for_complete_market_day"
-    latest_verified = candidate_date if status == "fresh" else (current_date or candidate_date)
     source_dates = (candidate or {}).get("source_dates", {})
     if not source_dates and candidate:
         source_dates = {
             "EQQQ.DE_adjusted_close": (candidate.get("benchmarks", {}).get("NASDAQ", {}).get("last_date")),
             "XACT-OMXS30.ST_adjusted_close": (candidate.get("benchmarks", {}).get("OMX", {}).get("last_date")),
         }
+    if status == "auto":
+        latest_source = max((day for day in source_dates.values() if day), default=candidate_date)
+        aligned = candidate_date and candidate_date == latest_source
+        status = "fresh" if aligned and (not current_date or candidate_date >= current_date) else "waiting_for_complete_market_day"
+    latest_verified = max(filter(None, [candidate_date, current_date]), default=None)
     payload = {
         "schema_version": 1,
         "source": "public_market_update",

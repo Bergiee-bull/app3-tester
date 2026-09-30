@@ -18,6 +18,9 @@ const validation = validatePublicSignal(signal);
 if (!validation.valid) throw new Error(validation.errors.join("\n"));
 if (!validateAssetRegistry(registry)) throw new Error("asset_registry.json är ogiltig");
 if (!validateBenchmarkData(benchmarks)) throw new Error("benchmark_series.json är ogiltig");
+if (Object.values(benchmarks.latest_valuations).some((quote) => quote.date !== benchmarks.latest_common_market_date)) {
+  throw new Error("ETF-värdering och jämförelsegraf måste använda samma gemensamma marknadsdag");
+}
 if (!validateStrategyHistory(strategyHistory)) throw new Error("app3_strategy_history.json är ogiltig");
 if (fs.existsSync(statusPath) && !validateMarketStatus(JSON.parse(fs.readFileSync(statusPath, "utf8")))) {
   throw new Error("public_market_update_status.json är ogiltig");
