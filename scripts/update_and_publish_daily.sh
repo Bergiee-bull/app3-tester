@@ -37,7 +37,7 @@ NPM_BIN="${NPM_BIN:-$(command -v npm)}"
 GIT_BIN="${GIT_BIN:-$(command -v git)}"
 
 REPO_STARTED_CLEAN=false
-PUBLISH_FILES=(data/app3_signal.json data/benchmark_series.json data/app3_strategy_history.json)
+PUBLISH_FILES=(data/app3_signal.json data/benchmark_series.json data/app3_strategy_history.json data/public_market_update_status.json)
 GENERATED_FILES=()
 cleanup() {
   local status=$?
@@ -97,6 +97,10 @@ if ! $DRY_RUN; then
   "$PYTHON_BIN" "$REPO_ROOT/scripts/promote_public_benchmark.py" \
     --candidate "$BENCHMARK_CANDIDATE" \
     --target "$BENCHMARK_OUTPUT"
+  GENERATED_FILES+=(data/public_market_update_status.json)
+  "$PYTHON_BIN" "$REPO_ROOT/scripts/write_public_market_status.py" \
+    --output "$REPO_ROOT/data/public_market_update_status.json" \
+    --benchmark "$BENCHMARK_CANDIDATE" --current "$BENCHMARK_OUTPUT" --status auto
 fi
 
 if $DRY_RUN; then
@@ -114,7 +118,7 @@ fi
 
 while IFS= read -r changed_file; do
   case "$changed_file" in
-    data/app3_signal.json|data/benchmark_series.json|data/app3_strategy_history.json) ;;
+    data/app3_signal.json|data/benchmark_series.json|data/app3_strategy_history.json|data/public_market_update_status.json) ;;
     *) echo "Oväntad fil ändrades: $changed_file" >&2; exit 1 ;;
   esac
 done < <("$GIT_BIN" diff --name-only)

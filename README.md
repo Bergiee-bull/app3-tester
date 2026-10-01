@@ -206,7 +206,7 @@ The existing signal publisher uses a fail-closed chain:
    strategy history; reject sample data.
 4. Run all tests.
 5. Commit only `data/app3_signal.json`, `data/benchmark_series.json`, and
-   `data/app3_strategy_history.json`.
+   `data/app3_strategy_history.json`, plus the public market-status JSON.
 6. Push `main`, after which GitHub Actions deploys GitHub Pages.
 
 Test the complete chain without changing or publishing files:
@@ -277,6 +277,51 @@ common date requires all canonical series to exist on that date; no forward-fill
 or mixed-date headline is allowed.
 
 ## Local Development
+
+### Market-data diagnosis (read-only)
+
+Install the tested export dependencies with
+`python3 -m pip install -r requirements-market-data.txt`. Run
+`python3 scripts/export_public_benchmarks.py --doctor` to fetch real data and
+print per-symbol raw/processed dates, completed close, fetch timestamp,
+expected completed session, selected request method, attempts, and blockers.
+Exit codes: 0 PASS, 1 WARN (valid but late/incomplete), 2 FAIL (no validated
+history). The command does not export files or invoke production/Telegram.
+
+`market_data_diagnostics` is also included in exported benchmarks and in
+`data/public_market_update_status.json`. Both publishers now refresh status,
+so the morning benchmark cannot be paired with yesterday's status indefinitely.
+XETR and XSTO calendars account for weekends and exchange holidays. FX is
+required on common ETF sessions, after its UTC daily bar is completed.
+
+Data flow: `market_prices` in `scripts/export_public_benchmarks.py` fetches
+Yahoo EQQQ.DE (Xetra, EUR), XACT-OMXS30.ST (Stockholm, SEK) and EURSEK=X.
+On failure or stale data it tries `Ticker.history` for the same symbol, with
+the same validation; this is a Yahoo request fallback, **not an independent
+provider**. It does not splice adjusted-price histories or forward-fill holes.
+`normalize_prices` filters incomplete rows; `build_payload` intersects the
+actual indexes. No raw-price file cache exists: downloads are in memory;
+yfinance may keep its own transport/timezone metadata cache. The public
+benchmark file is the retained validated artifact. `promote_public_benchmark.py`
+prevents date regression. `src/charts.js` builds the graph from its observations;
+`src/app.js` loads these and market status. The private production Doctor gates
+production decisions separately; this public market Doctor cannot mutate them.
+
+On 2026-10-01, full-history and one-month Yahoo requests both omitted EQQQ.DE
+2026-09-30 while XACT and FX included it. The 09:15 pipeline had already moved
+the common date to 2026-09-29. Its status artifact still described 2026-09-28
+because only the 22:15 flow previously refreshed status. A current provisional
+row is not evidence that a missing previous daily close exists.
+
+Source assessment: [Deutsche Boerse historical data](https://www.cashmarket.deutsche-boerse.com/cash-en/Data-Tech/statistics/market-data)
+and [Nasdaq market data](https://www.nasdaq.com/products/data/market-data-catalog)
+offer official licensed services; no unverified scraping backend is added.
+[Riksbank's official API](https://www.riksbank.se/sv/statistik/rantor-och-valutakurser/hamta-rantor-och-valutakurser-via-api/fragor-och-svar-om-apiet-for-rantor-och-valutakurser/)
+responded to `/swea/v1/Observations/Latest/SEKEURPMI` during diagnosis.
+Its published rate is an ECB-derived daily reference, not the same fixing as
+Yahoo's FX close. Substituting it would change historical SEK returns; it is
+therefore evaluated but not silently introduced as a primary/fallback series.
+XACT OMXS30 remains the Swedish instrument throughout.
 
 Requires Python 3 for the static server and Node.js 22 or newer for tests.
 

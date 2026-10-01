@@ -54,6 +54,11 @@ def main() -> int:
         latest_source = max((day for day in source_dates.values() if day), default=candidate_date)
         aligned = candidate_date and candidate_date == latest_source
         status = "fresh" if aligned and (not current_date or candidate_date >= current_date) else "waiting_for_complete_market_day"
+        doctor = (candidate or {}).get("market_data_diagnostics", {})
+        if doctor.get("status") == "PASS" and candidate_date and (not current_date or candidate_date >= current_date):
+            status = "fresh"
+        elif doctor.get("status") in {"WARN", "FAIL"}:
+            status = "waiting_for_complete_market_day"
     latest_verified = max(filter(None, [candidate_date, current_date]), default=None)
     payload = {
         "schema_version": 1,
@@ -65,6 +70,7 @@ def main() -> int:
         "latest_source_dates": source_dates,
         "is_sample_data": False,
         "error": safe_error(args.error),
+        "market_data_diagnostics": (candidate or {}).get("market_data_diagnostics"),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
