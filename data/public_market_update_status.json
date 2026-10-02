@@ -2,7 +2,7 @@
   "schema_version": 1,
   "source": "public_market_update",
   "status": "waiting_for_complete_market_day",
-  "attempted_at": "2026-10-02T22:00:09+02:00",
+  "attempted_at": "2026-10-02T22:15:06+02:00",
   "latest_verified_market_date": "2026-09-30",
   "candidate_market_date": "2026-09-30",
   "latest_source_dates": {
@@ -23,7 +23,7 @@
       "EQQQ.DE": {
         "symbol": "EQQQ.DE",
         "source": "Yahoo Finance via yfinance",
-        "fetch_timestamp": "2026-10-02T22:00:06.272296+02:00",
+        "fetch_timestamp": "2026-10-02T22:15:04.495853+02:00",
         "expected_latest_completed_market_date": "2026-10-02",
         "latest_raw_date": "2026-10-02",
         "latest_processed_date": "2026-10-02",
@@ -45,7 +45,7 @@
       "XACT-OMXS30.ST": {
         "symbol": "XACT-OMXS30.ST",
         "source": "Yahoo Finance via yfinance",
-        "fetch_timestamp": "2026-10-02T22:00:06.272296+02:00",
+        "fetch_timestamp": "2026-10-02T22:15:04.495853+02:00",
         "expected_latest_completed_market_date": "2026-10-02",
         "latest_raw_date": "2026-10-02",
         "latest_processed_date": "2026-10-02",
@@ -67,7 +67,7 @@
       "EURSEK=X": {
         "symbol": "EURSEK=X",
         "source": "Yahoo Finance via yfinance",
-        "fetch_timestamp": "2026-10-02T22:00:06.272296+02:00",
+        "fetch_timestamp": "2026-10-02T22:15:04.495853+02:00",
         "expected_latest_completed_market_date": "2026-10-01",
         "latest_raw_date": "2026-10-02",
         "latest_processed_date": "2026-10-01",
