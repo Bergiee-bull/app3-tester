@@ -2,12 +2,12 @@
   "schema_version": 1,
   "source": "public_market_update",
   "status": "waiting_for_complete_market_day",
-  "attempted_at": "2026-10-06T09:15:03+02:00",
+  "attempted_at": "2026-10-06T22:00:04+02:00",
   "latest_verified_market_date": "2026-10-02",
   "candidate_market_date": "2026-10-02",
   "latest_source_dates": {
-    "EQQQ.DE_adjusted_close": "2026-10-02",
-    "XACT-OMXS30.ST_adjusted_close": "2026-10-05",
+    "EQQQ.DE_adjusted_close": "2026-10-06",
+    "XACT-OMXS30.ST_adjusted_close": "2026-10-06",
     "EURSEK=X_close": "2026-10-05"
   },
   "is_sample_data": false,
@@ -23,26 +23,19 @@
       "EQQQ.DE": {
         "symbol": "EQQQ.DE",
         "source": "Yahoo Finance via yfinance",
-        "fetch_timestamp": "2026-10-06T09:15:01.490802+02:00",
-        "expected_latest_completed_market_date": "2026-10-05",
-        "latest_raw_date": "2026-10-02",
-        "latest_processed_date": "2026-10-02",
-        "latest_close": 669.0999755859375,
-        "freshness": "STALE",
+        "fetch_timestamp": "2026-10-06T22:00:02.856333+02:00",
+        "expected_latest_completed_market_date": "2026-10-06",
+        "latest_raw_date": "2026-10-06",
+        "latest_processed_date": "2026-10-06",
+        "latest_close": 679.7999877929688,
+        "freshness": "PASS",
         "attempts": [
           {
             "source": "Yahoo Finance via yfinance",
             "transport": "download",
-            "latest_raw_date": "2026-10-02",
-            "latest_processed_date": "2026-10-02",
-            "status": "STALE"
-          },
-          {
-            "source": "Yahoo Finance via yfinance",
-            "transport": "history",
-            "latest_raw_date": "2026-10-02",
-            "latest_processed_date": "2026-10-02",
-            "status": "STALE"
+            "latest_raw_date": "2026-10-06",
+            "latest_processed_date": "2026-10-06",
+            "status": "PASS"
           }
         ],
         "selected_transport": "download",
@@ -52,18 +45,18 @@
       "XACT-OMXS30.ST": {
         "symbol": "XACT-OMXS30.ST",
         "source": "Yahoo Finance via yfinance",
-        "fetch_timestamp": "2026-10-06T09:15:01.490802+02:00",
-        "expected_latest_completed_market_date": "2026-10-05",
+        "fetch_timestamp": "2026-10-06T22:00:02.856333+02:00",
+        "expected_latest_completed_market_date": "2026-10-06",
         "latest_raw_date": "2026-10-06",
-        "latest_processed_date": "2026-10-05",
-        "latest_close": 484.6000061035156,
+        "latest_processed_date": "2026-10-06",
+        "latest_close": 490.0,
         "freshness": "PASS",
         "attempts": [
           {
             "source": "Yahoo Finance via yfinance",
             "transport": "download",
             "latest_raw_date": "2026-10-06",
-            "latest_processed_date": "2026-10-05",
+            "latest_processed_date": "2026-10-06",
             "status": "PASS"
           }
         ],
@@ -74,9 +67,9 @@
       "EURSEK=X": {
         "symbol": "EURSEK=X",
         "source": "Yahoo Finance via yfinance",
-        "fetch_timestamp": "2026-10-06T09:15:01.490802+02:00",
+        "fetch_timestamp": "2026-10-06T22:00:02.856333+02:00",
         "expected_latest_completed_market_date": "2026-10-05",
-        "latest_raw_date": "2026-10-05",
+        "latest_raw_date": "2026-10-06",
         "latest_processed_date": "2026-10-05",
         "latest_close": 11.293700218200684,
         "freshness": "PASS",
@@ -84,7 +77,7 @@
           {
             "source": "Yahoo Finance via yfinance",
             "transport": "download",
-            "latest_raw_date": "2026-10-05",
+            "latest_raw_date": "2026-10-06",
             "latest_processed_date": "2026-10-05",
             "status": "PASS"
           }
