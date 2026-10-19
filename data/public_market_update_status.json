@@ -2,7 +2,7 @@
   "schema_version": 1,
   "source": "public_market_update",
   "status": "fresh",
-  "attempted_at": "2026-10-18T22:00:07+02:00",
+  "attempted_at": "2026-10-19T09:15:08+02:00",
   "latest_verified_market_date": "2026-10-16",
   "candidate_market_date": "2026-10-16",
   "latest_source_dates": {
@@ -21,7 +21,7 @@
       "EQQQ.DE": {
         "symbol": "EQQQ.DE",
         "source": "Yahoo Finance via yfinance",
-        "fetch_timestamp": "2026-10-18T22:00:05.777508+02:00",
+        "fetch_timestamp": "2026-10-19T09:15:06.702694+02:00",
         "expected_latest_completed_market_date": "2026-10-16",
         "latest_raw_date": "2026-10-16",
         "latest_processed_date": "2026-10-16",
@@ -43,9 +43,9 @@
       "XACT-OMXS30.ST": {
         "symbol": "XACT-OMXS30.ST",
         "source": "Yahoo Finance via yfinance",
-        "fetch_timestamp": "2026-10-18T22:00:05.777508+02:00",
+        "fetch_timestamp": "2026-10-19T09:15:06.702694+02:00",
         "expected_latest_completed_market_date": "2026-10-16",
-        "latest_raw_date": "2026-10-16",
+        "latest_raw_date": "2026-10-19",
         "latest_processed_date": "2026-10-16",
         "latest_close": 490.3500061035156,
         "freshness": "PASS",
@@ -53,7 +53,7 @@
           {
             "source": "Yahoo Finance via yfinance",
             "transport": "download",
-            "latest_raw_date": "2026-10-16",
+            "latest_raw_date": "2026-10-19",
             "latest_processed_date": "2026-10-16",
             "status": "PASS"
           }
@@ -65,9 +65,9 @@
       "EURSEK=X": {
         "symbol": "EURSEK=X",
         "source": "Yahoo Finance via yfinance",
-        "fetch_timestamp": "2026-10-18T22:00:05.777508+02:00",
+        "fetch_timestamp": "2026-10-19T09:15:06.702694+02:00",
         "expected_latest_completed_market_date": "2026-10-16",
-        "latest_raw_date": "2026-10-18",
+        "latest_raw_date": "2026-10-16",
         "latest_processed_date": "2026-10-16",
         "latest_close": 11.158109664916992,
         "freshness": "PASS",
@@ -75,7 +75,7 @@
           {
             "source": "Yahoo Finance via yfinance",
             "transport": "download",
-            "latest_raw_date": "2026-10-18",
+            "latest_raw_date": "2026-10-16",
             "latest_processed_date": "2026-10-16",
             "status": "PASS"
           }
