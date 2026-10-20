@@ -1,69 +1,60 @@
 {
   "schema_version": 1,
   "source": "public_market_update",
-  "status": "waiting_for_complete_market_day",
-  "attempted_at": "2026-10-20T09:15:08+02:00",
-  "latest_verified_market_date": "2026-10-16",
-  "candidate_market_date": "2026-10-16",
+  "status": "fresh",
+  "attempted_at": "2026-10-20T22:00:08+02:00",
+  "latest_verified_market_date": "2026-10-19",
+  "candidate_market_date": "2026-10-19",
   "latest_source_dates": {
-    "EQQQ.DE_adjusted_close": "2026-10-16",
-    "XACT-OMXS30.ST_adjusted_close": "2026-10-19",
+    "EQQQ.DE_adjusted_close": "2026-10-20",
+    "XACT-OMXS30.ST_adjusted_close": "2026-10-20",
     "EURSEK=X_close": "2026-10-19"
   },
   "is_sample_data": false,
   "error": null,
   "market_data_diagnostics": {
-    "status": "WARN",
+    "status": "PASS",
     "expected_latest_completed_market_date": "2026-10-19",
-    "latest_common_date": "2026-10-16",
-    "blocking_series": [
-      "EQQQ.DE"
-    ],
+    "latest_common_date": "2026-10-19",
+    "blocking_series": [],
     "series": {
       "EQQQ.DE": {
         "symbol": "EQQQ.DE",
         "source": "Yahoo Finance via yfinance",
-        "fetch_timestamp": "2026-10-20T09:15:06.545233+02:00",
-        "expected_latest_completed_market_date": "2026-10-19",
-        "latest_raw_date": "2026-10-16",
-        "latest_processed_date": "2026-10-16",
-        "latest_close": 641.9000244140625,
-        "freshness": "STALE",
-        "attempts": [
-          {
-            "source": "Yahoo Finance via yfinance",
-            "transport": "download",
-            "latest_raw_date": "2026-10-16",
-            "latest_processed_date": "2026-10-16",
-            "status": "STALE"
-          },
-          {
-            "source": "Yahoo Finance via yfinance",
-            "transport": "history",
-            "latest_raw_date": "2026-10-16",
-            "latest_processed_date": "2026-10-16",
-            "status": "STALE"
-          }
-        ],
-        "selected_transport": "download",
-        "fallback_used": false,
-        "blocks_common_date": true
-      },
-      "XACT-OMXS30.ST": {
-        "symbol": "XACT-OMXS30.ST",
-        "source": "Yahoo Finance via yfinance",
-        "fetch_timestamp": "2026-10-20T09:15:06.545233+02:00",
-        "expected_latest_completed_market_date": "2026-10-19",
+        "fetch_timestamp": "2026-10-20T22:00:06.260310+02:00",
+        "expected_latest_completed_market_date": "2026-10-20",
         "latest_raw_date": "2026-10-20",
-        "latest_processed_date": "2026-10-19",
-        "latest_close": 486.45001220703125,
+        "latest_processed_date": "2026-10-20",
+        "latest_close": 642.9000244140625,
         "freshness": "PASS",
         "attempts": [
           {
             "source": "Yahoo Finance via yfinance",
             "transport": "download",
             "latest_raw_date": "2026-10-20",
-            "latest_processed_date": "2026-10-19",
+            "latest_processed_date": "2026-10-20",
+            "status": "PASS"
+          }
+        ],
+        "selected_transport": "download",
+        "fallback_used": false,
+        "blocks_common_date": false
+      },
+      "XACT-OMXS30.ST": {
+        "symbol": "XACT-OMXS30.ST",
+        "source": "Yahoo Finance via yfinance",
+        "fetch_timestamp": "2026-10-20T22:00:06.260310+02:00",
+        "expected_latest_completed_market_date": "2026-10-20",
+        "latest_raw_date": "2026-10-20",
+        "latest_processed_date": "2026-10-20",
+        "latest_close": 482.75,
+        "freshness": "PASS",
+        "attempts": [
+          {
+            "source": "Yahoo Finance via yfinance",
+            "transport": "download",
+            "latest_raw_date": "2026-10-20",
+            "latest_processed_date": "2026-10-20",
             "status": "PASS"
           }
         ],
@@ -74,7 +65,7 @@
       "EURSEK=X": {
         "symbol": "EURSEK=X",
         "source": "Yahoo Finance via yfinance",
-        "fetch_timestamp": "2026-10-20T09:15:06.545233+02:00",
+        "fetch_timestamp": "2026-10-20T22:00:06.260310+02:00",
         "expected_latest_completed_market_date": "2026-10-19",
         "latest_raw_date": "2026-10-20",
         "latest_processed_date": "2026-10-19",
