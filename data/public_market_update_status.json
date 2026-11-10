@@ -1,51 +1,60 @@
 {
   "schema_version": 1,
   "source": "public_market_update",
-  "status": "fresh",
-  "attempted_at": "2026-11-09T22:15:06+01:00",
+  "status": "waiting_for_complete_market_day",
+  "attempted_at": "2026-11-10T09:15:08+01:00",
   "latest_verified_market_date": "2026-11-06",
   "candidate_market_date": "2026-11-06",
   "latest_source_dates": {
-    "EQQQ.DE_adjusted_close": "2026-11-09",
+    "EQQQ.DE_adjusted_close": "2026-11-06",
     "XACT-OMXS30.ST_adjusted_close": "2026-11-09",
-    "EURSEK=X_close": "2026-11-06"
+    "EURSEK=X_close": "2026-11-09"
   },
   "is_sample_data": false,
   "error": null,
   "market_data_diagnostics": {
-    "status": "PASS",
-    "expected_latest_completed_market_date": "2026-11-06",
+    "status": "WARN",
+    "expected_latest_completed_market_date": "2026-11-09",
     "latest_common_date": "2026-11-06",
-    "blocking_series": [],
+    "blocking_series": [
+      "EQQQ.DE"
+    ],
     "series": {
       "EQQQ.DE": {
         "symbol": "EQQQ.DE",
         "source": "Yahoo Finance via yfinance",
-        "fetch_timestamp": "2026-11-09T22:15:05.056384+01:00",
+        "fetch_timestamp": "2026-11-10T09:15:06.310226+01:00",
         "expected_latest_completed_market_date": "2026-11-09",
-        "latest_raw_date": "2026-11-09",
-        "latest_processed_date": "2026-11-09",
-        "latest_close": 605.2999877929688,
-        "freshness": "PASS",
+        "latest_raw_date": "2026-11-06",
+        "latest_processed_date": "2026-11-06",
+        "latest_close": 596.0999755859375,
+        "freshness": "STALE",
         "attempts": [
           {
             "source": "Yahoo Finance via yfinance",
             "transport": "download",
-            "latest_raw_date": "2026-11-09",
-            "latest_processed_date": "2026-11-09",
-            "status": "PASS"
+            "latest_raw_date": "2026-11-06",
+            "latest_processed_date": "2026-11-06",
+            "status": "STALE"
+          },
+          {
+            "source": "Yahoo Finance via yfinance",
+            "transport": "history",
+            "latest_raw_date": "2026-11-06",
+            "latest_processed_date": "2026-11-06",
+            "status": "STALE"
           }
         ],
         "selected_transport": "download",
         "fallback_used": false,
-        "blocks_common_date": false
+        "blocks_common_date": true
       },
       "XACT-OMXS30.ST": {
         "symbol": "XACT-OMXS30.ST",
         "source": "Yahoo Finance via yfinance",
-        "fetch_timestamp": "2026-11-09T22:15:05.056384+01:00",
+        "fetch_timestamp": "2026-11-10T09:15:06.310226+01:00",
         "expected_latest_completed_market_date": "2026-11-09",
-        "latest_raw_date": "2026-11-09",
+        "latest_raw_date": "2026-11-10",
         "latest_processed_date": "2026-11-09",
         "latest_close": 494.20001220703125,
         "freshness": "PASS",
@@ -53,7 +62,7 @@
           {
             "source": "Yahoo Finance via yfinance",
             "transport": "download",
-            "latest_raw_date": "2026-11-09",
+            "latest_raw_date": "2026-11-10",
             "latest_processed_date": "2026-11-09",
             "status": "PASS"
           }
@@ -65,18 +74,18 @@
       "EURSEK=X": {
         "symbol": "EURSEK=X",
         "source": "Yahoo Finance via yfinance",
-        "fetch_timestamp": "2026-11-09T22:15:05.056384+01:00",
-        "expected_latest_completed_market_date": "2026-11-06",
-        "latest_raw_date": "2026-11-09",
-        "latest_processed_date": "2026-11-06",
-        "latest_close": 11.013649940490723,
+        "fetch_timestamp": "2026-11-10T09:15:06.310226+01:00",
+        "expected_latest_completed_market_date": "2026-11-09",
+        "latest_raw_date": "2026-11-10",
+        "latest_processed_date": "2026-11-09",
+        "latest_close": 11.025750160217285,
         "freshness": "PASS",
         "attempts": [
           {
             "source": "Yahoo Finance via yfinance",
             "transport": "download",
-            "latest_raw_date": "2026-11-09",
-            "latest_processed_date": "2026-11-06",
+            "latest_raw_date": "2026-11-10",
+            "latest_processed_date": "2026-11-09",
             "status": "PASS"
           }
         ],
