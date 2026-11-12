@@ -19,7 +19,7 @@ import { assertComparisonReconciles, buildComparisonReconciliation } from "./rec
 
 const $ = (id) => document.getElementById(id);
 const store = createPortfolioStore(window.localStorage);
-const APP_VERSION = "1.4.2-portfolio";
+const APP_VERSION = "1.4.3-portfolio";
 // Public bookkeeping is usable while every strategy/publication gate stays closed.
 const PUBLIC_PORTFOLIO_ONLY = true;
 const MANUAL_BOOKKEEPING = Object.freeze({ id: "manual_portfolio", version: "1" });
@@ -190,8 +190,9 @@ function renderPortfolio() {
       ? `Kursdatum: ${formatDate(latestValuation.date)} · registrerat innehav`
       : "Värderingsdag: saknas";
   }
-  setReturn($("totalReturn"), result.totalReturnPct);
-  setReturn($("ytdReturn"), result.ytdReturnPct);
+  const externalCashFlows = (portfolio.transactions || []).some(item => item.type === "CASH_ADJUSTMENT");
+  setReturn($("totalReturn"), PUBLIC_PORTFOLIO_ONLY && externalCashFlows ? null : result.totalReturnPct);
+  setReturn($("ytdReturn"), PUBLIC_PORTFOLIO_ONLY ? null : result.ytdReturnPct);
   renderTransactions();
   renderChart();
   updateSwitchButton(result.holdings);
