@@ -1,0 +1,16 @@
+{
+  "NASDAQ": {
+    "display_name": "Nasdaq 100",
+    "default_instrument": "EQQQ",
+    "instrument_name": "Invesco EQQQ Nasdaq-100 UCITS ETF Dist",
+    "currency": "EUR",
+    "theme": "nasdaq"
+  },
+  "OMX": {
+    "display_name": "Sverige / OMX",
+    "default_instrument": "XACT OMXS30",
+    "instrument_name": "XACT OMXS30 ESG (UCITS ETF)",
+    "currency": "SEK",
+    "theme": "omx"
+  }
+}
