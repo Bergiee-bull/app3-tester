@@ -1,4 +1,4 @@
-import { buildCanonicalComparisonCurves } from "./reconciliation.js";
+import { buildCanonicalComparisonCurves } from "./reconciliation.js?v=1.4.4-portfolio";
 
 export function buildPerformanceComparison(portfolio, benchmarkData, strategyHistory) {
   return buildCanonicalComparisonCurves(portfolio, benchmarkData, strategyHistory);

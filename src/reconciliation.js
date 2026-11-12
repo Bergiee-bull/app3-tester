@@ -1,4 +1,4 @@
-import { calculatePortfolio, holdingsFromTransactions, transactionValueSek } from "./portfolio.js";
+import { calculatePortfolio, holdingsFromTransactions, transactionValueSek } from "./portfolio.js?v=1.4.4-portfolio";
 
 export const RECONCILIATION_TOLERANCE_PP = 0.01;
 

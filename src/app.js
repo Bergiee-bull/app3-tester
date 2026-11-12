@@ -1,9 +1,9 @@
-import { loadAssetRegistry } from "./asset_registry.js";
-import { loadBenchmarkData } from "./benchmark_data.js?v=1.4.1";
-import { buildVisibleStrategyEvents, loadStrategyHistory } from "./strategy_history.js?v=1.4.1";
-import { loadMarketStatus } from "./market_status.js?v=1.4.1";
-import { assessSignal, signalViewModel } from "./signal.js";
-import { createPortfolioStore } from "./storage.js";
+import { loadAssetRegistry } from "./asset_registry.js?v=1.4.4-portfolio";
+import { loadBenchmarkData } from "./benchmark_data.js?v=1.4.4-portfolio";
+import { buildVisibleStrategyEvents, loadStrategyHistory } from "./strategy_history.js?v=1.4.4-portfolio";
+import { loadMarketStatus } from "./market_status.js?v=1.4.4-portfolio";
+import { assessSignal, signalViewModel } from "./signal.js?v=1.4.4-portfolio";
+import { createPortfolioStore } from "./storage.js?v=1.4.4-portfolio";
 import {
   addValuation,
   applyAutomaticValuations,
@@ -13,13 +13,13 @@ import {
   recordSnapshot,
   rememberSignal,
   transactionValueSek,
-} from "./portfolio.js?v=1.4.1";
-import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js?v=1.4.1";
-import { assertComparisonReconciles, buildComparisonReconciliation } from "./reconciliation.js";
+} from "./portfolio.js?v=1.4.4-portfolio";
+import { buildPerformanceComparison, drawPerformanceChart } from "./charts.js?v=1.4.4-portfolio";
+import { assertComparisonReconciles, buildComparisonReconciliation } from "./reconciliation.js?v=1.4.4-portfolio";
 
 const $ = (id) => document.getElementById(id);
 const store = createPortfolioStore(window.localStorage);
-const APP_VERSION = "1.4.3-portfolio";
+const APP_VERSION = "1.4.4-portfolio";
 // Public bookkeeping is usable while every strategy/publication gate stays closed.
 const PUBLIC_PORTFOLIO_ONLY = true;
 const MANUAL_BOOKKEEPING = Object.freeze({ id: "manual_portfolio", version: "1" });
@@ -514,4 +514,4 @@ checkAppVersion();
 renderMarketStatus();
 loadPublicData();
 // The approved retirement worker is updated only for existing App3 clients.
-import("./pause.js?v=20261112-r2");
+import("./pause.js?v=1.4.4-portfolio");
